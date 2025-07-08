@@ -1,6 +1,7 @@
 import { API_SERVER } from "@/config/config"
 import { hookstate, type State, useHookstate } from "@hookstate/core"
 import { toast } from "sonner"
+import { useProjectState, type ProjectWrapState } from "../projects"
 
 export interface Resource {
     id: string
@@ -8,6 +9,7 @@ export interface Resource {
     description: string
     key: string
     enabled: boolean
+    project_id: string
     created_at: string
     created_by: string
     updated_at: string
@@ -60,7 +62,7 @@ const state = hookstate<ResourceState>({
     currentPage: 1,
 })
 
-const wrapState = (state: State<ResourceState>) => ({
+const wrapState = (state: State<ResourceState>, project: ProjectWrapState) => ({
     fetchResources: (search: string, page: number, limit: number) => {
         if (state.loadingResources.value) {
             console.warn("Already loading, ignoring new fetch request");
@@ -70,7 +72,13 @@ const wrapState = (state: State<ResourceState>) => ({
         const sanirisedSearch = encodeURIComponent(search.trim());
         const url = `${API_SERVER}/resource/v1/search?name=${sanirisedSearch}&description=${sanirisedSearch}&key=${sanirisedSearch}&skip=${(page - 1) * limit}&limit=${limit}`;
         //mormal fetch
-        const loadingResolve = fetch(url)
+        const loadingResolve = fetch(url, {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+                "X-Project-Ids": project.project?.id || "",
+            },
+        })
             .then((response) => {
                 if (!response.ok) {
                     throw new Error("Network response was not ok");
@@ -106,6 +114,7 @@ const wrapState = (state: State<ResourceState>) => ({
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
+                "X-Project-Ids": project.project?.id || "",
             },
             body: JSON.stringify(resource),
         })
@@ -144,6 +153,7 @@ const wrapState = (state: State<ResourceState>) => ({
             method: "PUT",
             headers: {
                 "Content-Type": "application/json",
+                "X-Project-Ids": project.project?.id || "",
             },
             body: JSON.stringify(resource),
         })
@@ -186,6 +196,10 @@ const wrapState = (state: State<ResourceState>) => ({
     registeringResource: state.registeringResource.value,
     err: state.err.value,
     resources: state.resources.value,
+    resourceMap: state.resources.value.reduce((acc, resource) => {
+        acc[resource.key] = resource;
+        return acc;
+    }, {} as Record<string, Resource>),
     resource: state.resource.value,
     pages: state.pages.value,
     total: state.total.value,
@@ -193,4 +207,4 @@ const wrapState = (state: State<ResourceState>) => ({
 })
 
 
-export const useResourceState = () => wrapState(useHookstate(state))
+export const useResourceState = () => wrapState(useHookstate(state), useProjectState())

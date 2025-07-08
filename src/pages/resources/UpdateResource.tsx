@@ -38,6 +38,7 @@ const UpdateResource = (props: UpdateResourceProps) => {
             name: name,
             key: key,
             description: description,
+            project_id: props.data.project_id,
             enabled: true,
             created_at: new Date().toISOString(),
             created_by: "system", // This should be replaced with the actual user ID

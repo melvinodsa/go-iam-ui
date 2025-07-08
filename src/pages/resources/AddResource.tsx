@@ -19,10 +19,12 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { useResourceState } from "@/hooks/resources"
 import { useCallback, useEffect, useState } from "react"
+import { useProjectState } from "@/hooks/projects"
 
 
 const AddResource = () => {
     const state = useResourceState();
+    const projectState = useProjectState();
     const [dialogOpen, setDialogOpen] = useState(false);
     const [name, setName] = useState("");
     const [key, setKey] = useState("");
@@ -35,6 +37,7 @@ const AddResource = () => {
             name: name,
             key: key,
             description: description,
+            project_id: projectState.project?.id || '',
             enabled: true,
             created_at: new Date().toISOString(),
             created_by: "system", // This should be replaced with the actual user ID

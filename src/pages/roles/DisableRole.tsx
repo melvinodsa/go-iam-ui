@@ -1,4 +1,3 @@
-import { useResourceState, type Resource } from "@/hooks/resources";
 import { useCallback, useState, useEffect } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -14,18 +13,19 @@ import {
 } from "@/components/ui/dialog";
 import { CircleX } from "lucide-react";
 import { Loader2Icon } from "lucide-react";
+import { useRoleState, type Role } from "@/hooks/roles";
 
-interface DisableResourceProps {
-    data: Resource
+interface DisableRoleProps {
+    data: Role
 }
 
-const DisableResource = (props: DisableResourceProps) => {
-    const state = useResourceState();
+const DisableRole = (props: DisableRoleProps) => {
+    const state = useRoleState();
     const [dialogOpen, setDialogOpen] = useState(false);
 
     const handleDisable = useCallback(() => {
-        console.log("Disabling resource with ID:", props.data);
-        state.updateResource(Object.assign({}, props.data, {
+        console.log("Disabling role with ID:", props.data);
+        state.updateRole(Object.assign({}, props.data, {
             enabled: false,
             updated_at: new Date().toISOString(),
             updated_by: "system", // This should be replaced with the actual user ID
@@ -33,12 +33,12 @@ const DisableResource = (props: DisableResourceProps) => {
     }, [props.data.id]);
 
     useEffect(() => {
-        if (state.updatedResource) {
+        if (state.updatedRole) {
             setDialogOpen(false);
-            state.resetUpdatedResource(); // Reset the updated resource state
-            state.fetchResources("", 1, 10);
+            state.resetUpdatedRole(); // Reset the updated role state
+            state.fetchRoles("", 1, 10);
         }
-    }, [state.updatedResource]);
+    }, [state.updatedRole]);
 
     return (
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
@@ -58,11 +58,11 @@ const DisableResource = (props: DisableResourceProps) => {
                     <DialogClose asChild>
                         <Button variant="outline">Cancel</Button>
                     </DialogClose>
-                    <Button type="submit" onClick={handleDisable} disabled={state.updatingResource}>
-                        {state.updatingResource ? (
+                    <Button type="submit" onClick={handleDisable} disabled={state.updatingRole}>
+                        {state.updatingRole ? (
                             <><Loader2Icon className="animate-spin" /> Disabling...</>
                         ) : (
-                            "Disable Resource"
+                            "Disable Role"
                         )}
                     </Button>
                 </DialogFooter>
@@ -71,4 +71,4 @@ const DisableResource = (props: DisableResourceProps) => {
     );
 };
 
-export default DisableResource;
+export default DisableRole;

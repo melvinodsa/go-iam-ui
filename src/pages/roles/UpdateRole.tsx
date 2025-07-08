@@ -17,43 +17,57 @@ import {
 } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { useResourceState, type Resource } from "@/hooks/resources"
 import { useCallback, useEffect, useState } from "react"
+import { useRoleState, type ResourceItem, type Role } from "@/hooks/roles"
+import ResourceSelector from "./ResourceSelector"
+import { useResourceState } from "@/hooks/resources"
 
-interface UpdateResourceProps {
-    data: Resource
+interface UpdateRoleProps {
+    data: Role
 }
 
-const UpdateResource = (props: UpdateResourceProps) => {
-    const state = useResourceState();
+const UpdateRole = (props: UpdateRoleProps) => {
+    const state = useRoleState();
+    const resourceState = useResourceState();
     const [dialogOpen, setDialogOpen] = useState(false);
     const [name, setName] = useState(props.data.name || "");
-    const [key, setKey] = useState(props.data.key || "");
     const [description, setDescription] = useState(props.data.description || "");
+    const [resources, setResources] = useState<{ [key: string]: ResourceItem }>(props.data.resources);
 
 
     const handleSubmit = useCallback(() => {
-        const resource = {
+        const role = {
             id: props.data.id,
             name: name,
-            key: key,
             description: description,
+            resources: resources || [],
+            project_id: props.data.project_id || "",
             enabled: true,
             created_at: new Date().toISOString(),
             created_by: "system", // This should be replaced with the actual user ID
             updated_at: new Date().toISOString(),
             updated_by: "system", // This should be replaced with the actual user ID
         };
-        state.updateResource(resource)
-    }, [name, description, key]);
+        state.updateRole(role)
+    }, [name, description, resources]);
+
+    console.log(resources)
+
+
+
+
+    const searchResources = useCallback((search: string) => {
+        resourceState.fetchResources(search, 1, 10);
+    }, [resourceState.resources, resourceState.fetchResources]);
+
     useEffect(() => {
-        if (state.updatedResource) {
+        if (state.updatedRole) {
             // Close the dialog or reset the form
             setDialogOpen(false);
-            state.resetUpdatedResource(); // Reset the created resource state
-            state.fetchResources("", 1, 10); // Fetch resources after creation
+            state.resetUpdatedRole(); // Reset the created resource state
+            state.fetchRoles("", 1, 10); // Fetch resources after creation
         }
-    }, [state.updatedResource]);
+    }, [state.updatedRole]);
     return (
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
@@ -75,20 +89,40 @@ const UpdateResource = (props: UpdateResourceProps) => {
                         <Input id="name-1" name="name" placeholder="My Previleged Button" value={name} onChange={(e) => setName(e.target.value)} />
                     </div>
                     <div className="grid gap-3">
-                        <Label htmlFor="key-1">Key</Label>
-                        <Input id="key-1" name="key" placeholder="@myapp/ui/delete-button" value={key} onChange={(e) => setKey(e.target.value)} />
-                    </div>
-                    <div className="grid gap-3">
                         <Label htmlFor="description-1">Description</Label>
                         <Textarea id="description-1" name="description" placeholder="Description about the resource" value={description} onChange={(e) => setDescription(e.target.value)} />
                     </div>
+                    <ResourceSelector
+                        selected={Object.keys(resources)}
+                        onChange={(selected: string[]) => {
+                            setResources(selected.reduce<{ [key: string]: ResourceItem }>((acc, id) => {
+                                const resource = resourceState.resourceMap[id];
+                                if (resource) {
+                                    acc[id] = {
+                                        id: resource.id,
+                                        name: resource.name,
+                                        key: resource.key,
+                                    }
+                                } else if (resources[id]) {
+                                    acc[id] = resources[id];
+                                }
+                                return acc;
+                            }, {}));
+                        }}
+                        options={resourceState.resources.map(res => ({
+                            label: res.name,
+                            value: res.key,
+                        }))}
+                        loadOptions={searchResources}
+                        title="Choose Resources"
+                    />
                 </div>
                 <DialogFooter>
                     <DialogClose asChild>
                         <Button variant="outline">Cancel</Button>
                     </DialogClose>
-                    <Button type="submit" onClick={handleSubmit} disabled={state.updatingResource}>
-                        {state.updatingResource ? (
+                    <Button type="submit" onClick={handleSubmit} disabled={state.updatingRole}>
+                        {state.updatingRole ? (
                             <><Loader2Icon className="animate-spin" /> Saving changes...</>
                         ) : (
                             "Save changes"
@@ -100,4 +134,4 @@ const UpdateResource = (props: UpdateResourceProps) => {
     )
 }
 
-export default UpdateResource;
+export default UpdateRole;
