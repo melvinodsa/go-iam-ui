@@ -51,10 +51,6 @@ const UpdateRole = (props: UpdateRoleProps) => {
         state.updateRole(role)
     }, [name, description, resources]);
 
-    console.log(resources)
-
-
-
 
     const searchResources = useCallback((search: string) => {
         resourceState.fetchResources(search, 1, 10);

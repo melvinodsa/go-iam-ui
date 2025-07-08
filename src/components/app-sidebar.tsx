@@ -67,9 +67,17 @@ const data = {
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const state = useNavState();
   const projectsState = useProjectState();
+  const [openIndicies, setOpenIndicies] = React.useState<number[]>([]);
   React.useEffect(() => {
     projectsState.fetchProjects("");
   }, []);
+
+  React.useEffect(() => {
+    const ind = data.navMain.findIndex(item => state.pages[state.pages.length - 1].section === item.title)
+    if (!openIndicies.includes(ind)) {
+      setOpenIndicies(openIndicies.concat(ind))
+    }
+  }, [state.pages])
 
   const projectChange = React.useCallback((value: string) => {
     projectsState.setProject(value);
@@ -112,8 +120,15 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <SidebarMenu>
             {data.navMain.map((item, index) => (
               <Collapsible
+                onOpenChange={(opened) => {
+                  if (!opened) {
+                    setOpenIndicies(openIndicies.filter(ind => ind !== index))
+                  } else {
+                    setOpenIndicies(openIndicies.concat(index))
+                  }
+                }}
                 key={item.title}
-                defaultOpen={index === 1}
+                open={openIndicies.includes(index)}
                 className="group/collapsible"
               >
                 <SidebarMenuItem>
