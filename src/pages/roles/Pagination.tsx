@@ -13,7 +13,8 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select"
-import { useResourceState } from "@/hooks/resources";
+
+import { useRoleState } from "@/hooks/roles";
 
 interface PaginationProps {
     pageSize: number;
@@ -23,12 +24,12 @@ interface PaginationProps {
 
 
 const Pagination = (props: PaginationProps) => {
-    const state = useResourceState();
+    const state = useRoleState();
 
     return (
         <div className="flex items-center justify-end space-x-2 py-4">
             <div className="text-muted-foreground flex-1 text-sm">
-                Displaying {Math.min(state.resources.length, props.pageSize)} of{" "}
+                Displaying {Math.min(state.roles.length, props.pageSize)} of{" "}
                 {state.total}.
             </div>
             <div className="space-x-2 flex items-center">
