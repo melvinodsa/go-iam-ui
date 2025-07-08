@@ -1,0 +1,160 @@
+
+
+
+import { CirclePlus, Loader2Icon } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+
+import {
+    Dialog,
+    DialogClose,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from "@/components/ui/dialog"
+import { Label } from "@/components/ui/label"
+import {
+    Select,
+    SelectContent,
+    SelectGroup,
+    SelectItem,
+    SelectLabel,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select"
+import { useCallback, useEffect, useState } from "react"
+import { useAuthProviderState, type Params } from "@/hooks/authproviders"
+import { useProjectState } from "@/hooks/projects"
+
+
+const AddAuthProvider = () => {
+    const state = useAuthProviderState();
+    const projectState = useProjectState();
+    const [dialogOpen, setDialogOpen] = useState(false);
+    const [name, setName] = useState("");
+    const [provider, setProvider] = useState("GOOGLE");
+    const [params, setParams] = useState<Params[]>([]);
+
+
+    const handleSubmit = useCallback(() => {
+        const authprovider = {
+            id: "",
+            name: name,
+            params: params,
+            project_id: projectState.project?.id || "",
+            provider: provider,
+            enabled: true,
+            created_at: new Date().toISOString(),
+            created_by: "system", // This should be replaced with the actual user ID
+            updated_at: new Date().toISOString(),
+            updated_by: "system", // This should be replaced with the actual user ID
+        };
+        state.createAuthProvider(authprovider)
+    }, [name, params, projectState.project?.id, provider]);
+    useEffect(() => {
+        if (state.createdAuthProvider) {
+            // Close the dialog or reset the form
+            setDialogOpen(false);
+            state.resetCreatedAuthProvider(); // Reset the created auth provider state
+            state.fetchAuthProviders(); // Fetch auth providers after creation
+        }
+    }, [state.createdAuthProvider]);
+    return (
+        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+            <DialogTrigger asChild>
+                <Button>
+                    <CirclePlus className="mr-2 h-4 w-4" />Add
+                </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[425px]">
+                <DialogHeader>
+                    <DialogTitle>Add Auth Provider</DialogTitle>
+                    <DialogDescription>
+                        Add an auth provider in the system
+                    </DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-4">
+                    <div className="grid gap-3">
+                        <Label htmlFor="name-1">Name</Label>
+                        <Input id="name-1" name="name" placeholder="My superhero project" value={name} onChange={(e) => setName(e.target.value)} />
+                    </div>
+                    <Select value={provider} onValueChange={(value) => setProvider(value)}>
+                        <SelectTrigger className="w-[180px]">
+                            <SelectValue placeholder="Select provider" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectGroup>
+                                <SelectLabel>Providers</SelectLabel>
+                                <SelectItem value="GOOGLE">Google</SelectItem>
+                            </SelectGroup>
+                        </SelectContent>
+                    </Select>
+                    {
+                        provider === "GOOGLE" && (
+                            <GoogleParams
+                                params={params}
+                                onChange={(newParams) => {
+                                    setParams(newParams);
+                                }}
+                            />
+                        )
+                    }
+                </div>
+                <DialogFooter>
+                    <DialogClose asChild>
+                        <Button variant="outline">Cancel</Button>
+                    </DialogClose>
+                    <Button type="submit" onClick={handleSubmit} disabled={state.creatingAuthProvider}>
+                        {state.creatingAuthProvider ? (
+                            <><Loader2Icon className="animate-spin" /> Saving changes...</>
+                        ) : (
+                            "Save changes"
+                        )}
+                    </Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+    )
+}
+
+export default AddAuthProvider;
+
+
+interface ParamUpdateProps {
+    onChange: (params: Params[]) => void;
+    params: Params[];
+}
+
+const GoogleParams = (props: ParamUpdateProps) => {
+    const [params, setParams] = useState<Params[]>([
+        { label: "Client ID", value: "", key: "@GOOGLE/CLIENT_ID", is_secret: false },
+        { label: "Client Secret", value: "", key: "@GOOGLE/CLIENT_SECRET", is_secret: true },
+        { label: "Redirect URL", value: "", key: "@GOOGLE/REDIRECT_URI", is_secret: false },
+    ]);
+
+    const handleChange = (index: number, value: string) => {
+        setParams((prev) =>
+            prev.map((param, i) =>
+                i === index ? { ...param, value } : param
+            )
+        );
+        props.onChange(params);
+    };
+
+    return (
+        <div>
+            {params.map((param, index) => (
+                <div key={index} className="flex items-center gap-2 mb-2">
+                    <Input
+                        placeholder={param.label}
+                        value={param.value}
+                        onChange={(e) => handleChange(index, e.target.value)}
+                    />
+                </div>
+            ))}
+        </div>
+    );
+}
