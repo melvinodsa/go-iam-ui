@@ -13,6 +13,7 @@ import RolesListPage from "./pages/roles"
 import ProjectsListPage from "./pages/projects"
 import AuthProvidersListPage from "./pages/authprovider"
 import ClientsListPage from "./pages/client"
+import UsersListPage from "./pages/users"
 
 export default function App() {
   return (
@@ -47,6 +48,9 @@ export default function App() {
               <Route
                 path="/clients/"
                 element={<ClientsListPage />} />
+              <Route
+                path="/users/"
+                element={<UsersListPage />} />
             </Routes>
           </div>
         </SidebarInset>

@@ -10,12 +10,21 @@ export interface ResourceItem {
     key: string
 }
 
-export interface Role {
+export interface RoleItem {
     id: string
     name: string
-    description: string
+}
+
+export interface User {
+    id: string
+    name: string
     project_id: string
+    email: string
+    phone: string
+    expiry: string | null
     resources: { [key: string]: ResourceItem }
+    roles: { [key: string]: RoleItem }
+    policies: { [key: string]: string }
     enabled: boolean
     created_at: string
     created_by: string
@@ -24,58 +33,58 @@ export interface Role {
 }
 
 
-interface RolesResponse {
+interface UsersResponse {
     success: boolean
     message: string
     data: {
-        roles: Role[]
+        users: User[]
         total: number
         skip: number
         limit: number
     }
 }
 
-interface RoleResponse {
+interface UserResponse {
     success: boolean
     message: string
-    data: Role
+    data: User
 }
 
-interface RoleState {
-    roles: Role[]
-    loadingRoles: boolean
-    updatingRole: boolean
-    registeringRole: boolean
+interface UserState {
+    users: User[]
+    loadingUsers: boolean
+    updatingUser: boolean
+    registeringUser: boolean
     err: string
     total: number
     pages: number[]
     currentPage: number
-    createdRole: boolean
-    updatedRole: boolean
+    createdUser: boolean
+    updatedUser: boolean
 }
 
-const state = hookstate<RoleState>({
-    roles: [],
-    loadingRoles: false,
-    updatingRole: false,
-    registeringRole: false,
-    createdRole: false,
-    updatedRole: false,
+const state = hookstate<UserState>({
+    users: [],
+    loadingUsers: false,
+    updatingUser: false,
+    registeringUser: false,
+    createdUser: false,
+    updatedUser: false,
     err: "",
     total: 0,
     pages: [],
     currentPage: 1,
 })
 
-const wrapState = (state: State<RoleState>, project: ProjectWrapState) => ({
-    fetchRoles: (search: string, page: number, limit: number) => {
-        if (state.loadingRoles.value) {
+const wrapState = (state: State<UserState>, project: ProjectWrapState) => ({
+    fetchUsers: (search: string, page: number, limit: number) => {
+        if (state.loadingUsers.value) {
             console.warn("Already loading, ignoring new fetch request");
             return;
         }
-        state.loadingRoles.set(true);
+        state.loadingUsers.set(true);
         const sanirisedSearch = encodeURIComponent(search.trim());
-        const url = `${API_SERVER}/role/v1/?query=${sanirisedSearch}&skip=${(page - 1) * limit}&limit=${limit}`;
+        const url = `${API_SERVER}/user/v1/?query=${sanirisedSearch}&skip=${(page - 1) * limit}&limit=${limit}`;
         //mormal fetch
         const loadingResolve = fetch(url, {
             method: "GET",
@@ -90,30 +99,30 @@ const wrapState = (state: State<RoleState>, project: ProjectWrapState) => ({
                 }
                 return response.json();
             })
-            .then((data: RolesResponse) => {
-                state.roles.set(data.data.roles);
+            .then((data: UsersResponse) => {
+                state.users.set(data.data.users);
                 state.total.set(data.data.total);
                 state.pages.set(Array.from({ length: Math.ceil(data.data.total / limit) }, (_, i) => i + 1));
                 state.currentPage.set(page);
-                state.loadingRoles.set(false);
+                state.loadingUsers.set(false);
             })
             .catch((error) => {
-                state.loadingRoles.set(false);
-                throw new Error(`Failed to fetch roles: ${error.message}`);
+                state.loadingUsers.set(false);
+                throw new Error(`Failed to fetch users: ${error.message}`);
             });
         toast.promise(loadingResolve, {
-            loading: "Loading roles...",
-            success: "Roles loaded successfully",
-            error: err => err.message || "Failed to load roles",
+            loading: "Loading users...",
+            success: "Users loaded successfully",
+            error: err => err.message || "Failed to load users",
         });
     },
-    registerRole: (role: Role) => {
-        if (state.registeringRole.value) {
+    registerUser: (user: User) => {
+        if (state.registeringUser.value) {
             console.warn("Already registering, ignoring new create request");
             return;
         }
-        state.registeringRole.set(true);
-        const url = `${API_SERVER}/role/v1/`;
+        state.registeringUser.set(true);
+        const url = `${API_SERVER}/user/v1/`;
         //mormal fetch
         const loadingResolve = fetch(url, {
             method: "POST",
@@ -121,7 +130,7 @@ const wrapState = (state: State<RoleState>, project: ProjectWrapState) => ({
                 "Content-Type": "application/json",
                 "X-Project-Ids": project.project?.id || "",
             },
-            body: JSON.stringify(role),
+            body: JSON.stringify(user),
         })
             .then((response) => {
                 if (!response.ok) {
@@ -129,30 +138,30 @@ const wrapState = (state: State<RoleState>, project: ProjectWrapState) => ({
                 }
                 return response.json();
             })
-            .then((data: RoleResponse) => {
+            .then((data: UserResponse) => {
                 if (!data.success) {
-                    throw new Error(data.message || "Failed to register role");
+                    throw new Error(data.message || "Failed to register user");
                 }
-                state.createdRole.set(true);
-                state.registeringRole.set(false);
+                state.createdUser.set(true);
+                state.registeringUser.set(false);
             })
             .catch((error) => {
-                state.registeringRole.set(false);
-                throw new Error(`Failed to register role: ${error.message}`);
+                state.registeringUser.set(false);
+                throw new Error(`Failed to register user: ${error.message}`);
             });
         toast.promise(loadingResolve, {
-            loading: "Registering roles...",
-            success: "Role registered successfully",
-            error: err => err.message || "Failed to register role",
+            loading: "Registering users...",
+            success: "User registered successfully",
+            error: err => err.message || "Failed to register user",
         });
     },
-    updateRole: (role: Role) => {
-        if (state.updatingRole.value) {
+    updateUser: (user: User) => {
+        if (state.updatingUser.value) {
             console.warn("Already updating, ignoring new update request");
             return;
         }
-        state.updatingRole.set(true);
-        const url = `${API_SERVER}/role/v1/${role.id}`;
+        state.updatingUser.set(true);
+        const url = `${API_SERVER}/user/v1/${user.id}`;
         //mormal fetch
         const loadingResolve = fetch(url, {
             method: "PUT",
@@ -160,7 +169,7 @@ const wrapState = (state: State<RoleState>, project: ProjectWrapState) => ({
                 "Content-Type": "application/json",
                 "X-Project-Ids": project.project?.id || "",
             },
-            body: JSON.stringify(role),
+            body: JSON.stringify(user),
         })
             .then((response) => {
                 if (!response.ok) {
@@ -168,47 +177,43 @@ const wrapState = (state: State<RoleState>, project: ProjectWrapState) => ({
                 }
                 return response.json();
             })
-            .then((data: RoleResponse) => {
+            .then((data: UserResponse) => {
                 if (!data.success) {
-                    throw new Error(data.message || "Failed to update role");
+                    throw new Error(data.message || "Failed to update user");
                 }
-                state.updatedRole.set(true);
-                state.updatingRole.set(false);
+                state.updatedUser.set(true);
+                state.updatingUser.set(false);
             })
             .catch((error) => {
-                state.updatingRole.set(false);
-                throw new Error(`Failed to update role: ${error.message}`);
+                state.updatingUser.set(false);
+                throw new Error(`Failed to update user: ${error.message}`);
             });
         toast.promise(loadingResolve, {
-            loading: "Updating roles...",
-            success: "Role updated successfully",
-            error: err => err.message || "Failed to update role",
+            loading: "Updating users...",
+            success: "User updated successfully",
+            error: err => err.message || "Failed to update user",
         });
     },
     resetError: () => {
         state.err.set("");
     },
-    resetCreatedRole: () => {
-        state.createdRole.set(false);
+    resetCreatedUser: () => {
+        state.createdUser.set(false);
     },
-    resetUpdatedRole: () => {
-        state.updatedRole.set(false);
+    resetUpdatedUser: () => {
+        state.updatedUser.set(false);
     },
-    updatedRole: state.updatedRole.value,
-    createdRole: state.createdRole.value,
-    loadingRoles: state.loadingRoles.value,
-    updatingRole: state.updatingRole.value,
-    registeringRole: state.registeringRole.value,
+    updatedUser: state.updatedUser.value,
+    createdUser: state.createdUser.value,
+    loadingUsers: state.loadingUsers.value,
+    updatingUser: state.updatingUser.value,
+    registeringUser: state.registeringUser.value,
     err: state.err.value,
-    roles: state.roles.value,
+    users: state.users.value,
     pages: state.pages.value,
     total: state.total.value,
     currentPage: state.currentPage.value,
-    roleMap: state.roles.value.reduce<{ [key: string]: Role }>((acc, role) => {
-        acc[role.id] = role;
-        return acc;
-    }, {} as Record<string, Role>),
 })
 
 
-export const useRoleState = () => wrapState(useHookstate(state), useProjectState())
+export const useUserState = () => wrapState(useHookstate(state), useProjectState())

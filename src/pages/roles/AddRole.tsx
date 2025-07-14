@@ -21,7 +21,7 @@ import { useResourceState } from "@/hooks/resources"
 import { useCallback, useEffect, useState } from "react"
 import { useRoleState, type ResourceItem } from "@/hooks/roles"
 import { useProjectState } from "@/hooks/projects"
-import ResourceSelector from "./ResourceSelector"
+import MultiSearchSelector from "@/components/ui/multi-search-selector"
 
 
 const AddRole = () => {
@@ -85,13 +85,13 @@ const AddRole = () => {
                 <div className="grid gap-4">
                     <div className="grid gap-3">
                         <Label htmlFor="name-1">Name</Label>
-                        <Input id="name-1" name="name" placeholder="My Previleged Button" value={name} onChange={(e) => setName(e.target.value)} />
+                        <Input id="name-1" name="name" placeholder="My Previleged Role" value={name} onChange={(e) => setName(e.target.value)} />
                     </div>
                     <div className="grid gap-3">
                         <Label htmlFor="description-1">Description</Label>
-                        <Textarea id="description-1" name="description" placeholder="Description about the resource" value={description} onChange={(e) => setDescription(e.target.value)} />
+                        <Textarea id="description-1" name="description" placeholder="Description about the role" value={description} onChange={(e) => setDescription(e.target.value)} />
                     </div>
-                    <ResourceSelector
+                    <MultiSearchSelector
                         selected={Object.keys(resources)}
                         onChange={(selected: string[]) => {
                             setResources(selected.reduce<{ [key: string]: ResourceItem }>((acc, id) => {
@@ -114,6 +114,7 @@ const AddRole = () => {
                         }))}
                         loadOptions={searchResources}
                         title="Choose Resources"
+                        placeholder="Select resources for the role"
                     />
                 </div>
                 <DialogFooter>

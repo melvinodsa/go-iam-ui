@@ -13,19 +13,19 @@ import {
 } from "@/components/ui/dialog";
 import { CircleX } from "lucide-react";
 import { Loader2Icon } from "lucide-react";
-import { useRoleState, type Role } from "@/hooks/roles";
+import { useUserState, type User } from "@/hooks/users";
 
-interface DisableRoleProps {
-    data: Role
+interface DisableUserProps {
+    data: User
 }
 
-const DisableRole = (props: DisableRoleProps) => {
-    const state = useRoleState();
+const DisableUser = (props: DisableUserProps) => {
+    const state = useUserState();
     const [dialogOpen, setDialogOpen] = useState(false);
 
     const handleDisable = useCallback(() => {
-        console.log("Disabling role with ID:", props.data);
-        state.updateRole(Object.assign({}, props.data, {
+        console.log("Disabling user with ID:", props.data);
+        state.updateUser(Object.assign({}, props.data, {
             enabled: false,
             updated_at: new Date().toISOString(),
             updated_by: "system", // This should be replaced with the actual user ID
@@ -33,12 +33,12 @@ const DisableRole = (props: DisableRoleProps) => {
     }, [props.data.id]);
 
     useEffect(() => {
-        if (state.updatedRole) {
+        if (state.updatedUser) {
             setDialogOpen(false);
-            state.resetUpdatedRole(); // Reset the updated role state
-            state.fetchRoles("", 1, 10);
+            state.resetUpdatedUser(); // Reset the updated user state
+            state.fetchUsers("", 1, 10);
         }
-    }, [state.updatedRole]);
+    }, [state.updatedUser]);
 
     return (
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
@@ -49,20 +49,20 @@ const DisableRole = (props: DisableRoleProps) => {
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
-                    <DialogTitle>Disable Role</DialogTitle>
+                    <DialogTitle>Disable User</DialogTitle>
                     <DialogDescription>
-                        Disable the role in the system
+                        Disable the user in the system
                     </DialogDescription>
                 </DialogHeader>
                 <DialogFooter>
                     <DialogClose asChild>
                         <Button variant="outline">Cancel</Button>
                     </DialogClose>
-                    <Button type="submit" onClick={handleDisable} disabled={state.updatingRole}>
-                        {state.updatingRole ? (
+                    <Button type="submit" onClick={handleDisable} disabled={state.updatingUser}>
+                        {state.updatingUser ? (
                             <><Loader2Icon className="animate-spin" /> Disabling...</>
                         ) : (
-                            "Disable Role"
+                            "Disable User"
                         )}
                     </Button>
                 </DialogFooter>
@@ -71,4 +71,4 @@ const DisableRole = (props: DisableRoleProps) => {
     );
 };
 
-export default DisableRole;
+export default DisableUser;

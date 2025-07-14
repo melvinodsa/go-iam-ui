@@ -19,8 +19,8 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { useCallback, useEffect, useState } from "react"
 import { useRoleState, type ResourceItem, type Role } from "@/hooks/roles"
-import ResourceSelector from "./ResourceSelector"
 import { useResourceState } from "@/hooks/resources"
+import MultiSearchSelector from "@/components/ui/multi-search-selector"
 
 interface UpdateRoleProps {
     data: Role
@@ -88,7 +88,7 @@ const UpdateRole = (props: UpdateRoleProps) => {
                         <Label htmlFor="description-1">Description</Label>
                         <Textarea id="description-1" name="description" placeholder="Description about the resource" value={description} onChange={(e) => setDescription(e.target.value)} />
                     </div>
-                    <ResourceSelector
+                    <MultiSearchSelector
                         selected={Object.keys(resources)}
                         onChange={(selected: string[]) => {
                             setResources(selected.reduce<{ [key: string]: ResourceItem }>((acc, id) => {
@@ -111,6 +111,7 @@ const UpdateRole = (props: UpdateRoleProps) => {
                         }))}
                         loadOptions={searchResources}
                         title="Choose Resources"
+                        placeholder="Update resources for the role"
                     />
                 </div>
                 <DialogFooter>

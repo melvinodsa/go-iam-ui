@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import React, { useState, useEffect, useCallback } from "react"
-import { Check, Search } from "lucide-react"
+import { Search } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 interface Option {
@@ -18,7 +18,7 @@ interface Option {
     value: string
 }
 
-interface ResourceSelectorProps {
+interface MultiSearchSelectorSelectorProps {
     selected: string[]
     onChange: (selected: string[]) => void
     loadOptions: (search: string) => void
@@ -27,14 +27,14 @@ interface ResourceSelectorProps {
     title?: string
 }
 
-function ResourceSelector({
+function MultiSearchSelector({
     selected,
     onChange,
     loadOptions,
     options = [],
     placeholder = "Select options",
     title = "Select Items",
-}: ResourceSelectorProps) {
+}: MultiSearchSelectorSelectorProps) {
     const [open, setOpen] = useState(false)
     const [search, setSearch] = useState("")
     const [loading, setLoading] = useState(false)
@@ -125,4 +125,4 @@ function ResourceSelector({
 }
 
 
-export default React.memo(ResourceSelector);
+export default React.memo(MultiSearchSelector);

@@ -13,25 +13,25 @@ import {
 import { format } from "@formkit/tempo"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { useNavState } from "@/hooks/nav"
-import AddRole from "./AddRole"
-import UpdateRole from "./UpdateRole"
 import Pagination from "./Pagination"
-import DisableRole from "./DisableRole"
-import { useRoleState } from "@/hooks/roles"
+import { useUserState } from "@/hooks/users"
+import AddUser from "./AddUser"
+import DisableUser from "./DisableUser"
+import UpdateUser from "./UpdateUser"
 
-const RolesListPage = () => {
+const UsersListPage = () => {
     const navState = useNavState()
-    const state = useRoleState();
+    const state = useUserState();
     const [search, setSearch] = useState("")
     const [debouncedSearch, setDebouncedSearch] = useState("")
     const [pageSize, setPageSize] = useState(10)
 
     useEffect(() => {
-        state.fetchRoles("", 1, pageSize)
+        state.fetchUsers("", 1, pageSize)
     }, [])
 
     useEffect(() => {
-        navState.setPage({ location: '/roles', name: 'Roles', section: 'User Management' })
+        navState.setPage({ location: '/users', name: 'Users', section: 'User Management' })
     }, [])
 
     useEffect(() => {
@@ -45,12 +45,12 @@ const RolesListPage = () => {
     }, [search])
 
     useEffect(() => {
-        state.fetchRoles(debouncedSearch, 1, pageSize)
+        state.fetchUsers(debouncedSearch, 1, pageSize)
     }, [debouncedSearch, pageSize])
 
     const onPageChange = useCallback((page: number) => {
         if (page < 1 || page > state.pages.length) return
-        state.fetchRoles(debouncedSearch, page, pageSize)
+        state.fetchUsers(debouncedSearch, page, pageSize)
     }, [])
 
     const onFilterChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
@@ -62,44 +62,46 @@ const RolesListPage = () => {
         const newPageSize = parseInt(value, 10)
         if (isNaN(newPageSize) || newPageSize <= 0) return
         setPageSize(newPageSize)
-        state.fetchRoles(debouncedSearch, 1, newPageSize)
+        state.fetchUsers(debouncedSearch, 1, newPageSize)
     }, [state])
 
     return (
         <div className="w-full">
             <div className="flex items-center justify-between py-4">
                 <Input
-                    placeholder="Filter roles..."
+                    placeholder="Filter users..."
                     onChange={onFilterChange}
                     className="max-w-sm"
                 />
 
-                <AddRole />
+                <AddUser />
             </div>
             <div className="rounded-md border">
                 <Table>
                     <TableHeader>
                         <TableRow>
                             <TableHead>Name</TableHead>
+                            <TableHead>Email</TableHead>
                             <TableHead>Updated At</TableHead>
                             <TableHead></TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {state.roles.map((role) => (
-                            <TableRow key={role.id}>
+                        {state.users.map((user) => (
+                            <TableRow key={user.id}>
                                 <TableCell className="font-medium"><Tooltip>
                                     <TooltipTrigger asChild>
-                                        <div className="capitalize">{role.name}</div>
+                                        <div>{user.name}</div>
                                     </TooltipTrigger>
                                     <TooltipContent>
-                                        <p>{role.description}</p>
+                                        <p>{Object.keys(user.roles).length} roles</p>
                                     </TooltipContent>
                                 </Tooltip></TableCell>
-                                <TableCell>{format(new Date(role.updated_at || role.created_at))}</TableCell>
+                                <TableCell>{user.email}</TableCell>
+                                <TableCell>{format(new Date(user.updated_at || user.created_at))}</TableCell>
                                 <TableCell>
-                                    <UpdateRole data={role} />
-                                    <DisableRole data={role} />
+                                    <UpdateUser data={user} />
+                                    <DisableUser data={user} />
                                 </TableCell>
                             </TableRow>
                         ))}
@@ -116,4 +118,4 @@ const RolesListPage = () => {
 }
 
 
-export default RolesListPage;
+export default UsersListPage;
