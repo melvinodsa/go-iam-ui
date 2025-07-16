@@ -2,6 +2,7 @@ import { API_SERVER } from "@/config/config"
 import { hookstate, type ImmutableObject, type State, useHookstate } from "@hookstate/core"
 import { toast } from "sonner"
 import { useProjectState, type ProjectWrapState } from "../projects"
+import { useAuthState, type AuthWrapState } from "../auth"
 
 
 export interface Params {
@@ -57,7 +58,7 @@ const state = hookstate<AuthProvidersState>({
     err: "",
 })
 
-const wrapState = (state: State<AuthProvidersState>, project: ProjectWrapState) => ({
+const wrapState = (state: State<AuthProvidersState>, project: ProjectWrapState, auth: AuthWrapState) => ({
     fetchAuthProviders: () => {
         if (state.loadingAuthProviders.value) {
             console.warn("Already loading, ignoring new fetch request");
@@ -66,7 +67,7 @@ const wrapState = (state: State<AuthProvidersState>, project: ProjectWrapState) 
         state.loadingAuthProviders.set(true);
         const url = `${API_SERVER}/authprovider/v1`;
         //mormal fetch
-        const loadingResolve = fetch(url, {
+        const loadingResolve = auth.fetch(url, {
             headers: {
                 "Content-Type": "application/json",
                 "X-Project-Ids": project.project?.id || "",
@@ -100,7 +101,7 @@ const wrapState = (state: State<AuthProvidersState>, project: ProjectWrapState) 
         state.creatingAuthProvider.set(true);
         const url = `${API_SERVER}/authprovider/v1/`;
         //mormal fetch
-        const loadingResolve = fetch(url, {
+        const loadingResolve = auth.fetch(url, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -139,7 +140,7 @@ const wrapState = (state: State<AuthProvidersState>, project: ProjectWrapState) 
         state.updatingAuthProvider.set(true);
         const url = `${API_SERVER}/authprovider/v1/${authProvider.id}`;
         //mormal fetch
-        const loadingResolve = fetch(url, {
+        const loadingResolve = auth.fetch(url, {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json",
@@ -193,4 +194,4 @@ const wrapState = (state: State<AuthProvidersState>, project: ProjectWrapState) 
 })
 
 
-export const useAuthProviderState = () => wrapState(useHookstate(state), useProjectState())
+export const useAuthProviderState = () => wrapState(useHookstate(state), useProjectState(), useAuthState())

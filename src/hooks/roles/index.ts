@@ -2,6 +2,7 @@ import { API_SERVER } from "@/config/config"
 import { hookstate, type State, useHookstate } from "@hookstate/core"
 import { toast } from "sonner"
 import { useProjectState, type ProjectWrapState } from "../projects"
+import { useAuthState, type AuthWrapState } from "../auth"
 
 
 export interface ResourceItem {
@@ -67,7 +68,7 @@ const state = hookstate<RoleState>({
     currentPage: 1,
 })
 
-const wrapState = (state: State<RoleState>, project: ProjectWrapState) => ({
+const wrapState = (state: State<RoleState>, project: ProjectWrapState, auth: AuthWrapState) => ({
     fetchRoles: (search: string, page: number, limit: number) => {
         if (state.loadingRoles.value) {
             console.warn("Already loading, ignoring new fetch request");
@@ -77,7 +78,7 @@ const wrapState = (state: State<RoleState>, project: ProjectWrapState) => ({
         const sanirisedSearch = encodeURIComponent(search.trim());
         const url = `${API_SERVER}/role/v1/?query=${sanirisedSearch}&skip=${(page - 1) * limit}&limit=${limit}`;
         //mormal fetch
-        const loadingResolve = fetch(url, {
+        const loadingResolve = auth.fetch(url, {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
@@ -115,7 +116,7 @@ const wrapState = (state: State<RoleState>, project: ProjectWrapState) => ({
         state.registeringRole.set(true);
         const url = `${API_SERVER}/role/v1/`;
         //mormal fetch
-        const loadingResolve = fetch(url, {
+        const loadingResolve = auth.fetch(url, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -154,7 +155,7 @@ const wrapState = (state: State<RoleState>, project: ProjectWrapState) => ({
         state.updatingRole.set(true);
         const url = `${API_SERVER}/role/v1/${role.id}`;
         //mormal fetch
-        const loadingResolve = fetch(url, {
+        const loadingResolve = auth.fetch(url, {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json",
@@ -211,4 +212,4 @@ const wrapState = (state: State<RoleState>, project: ProjectWrapState) => ({
 })
 
 
-export const useRoleState = () => wrapState(useHookstate(state), useProjectState())
+export const useRoleState = () => wrapState(useHookstate(state), useProjectState(), useAuthState())

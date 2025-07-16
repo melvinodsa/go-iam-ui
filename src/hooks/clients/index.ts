@@ -2,6 +2,7 @@ import { API_SERVER } from "@/config/config"
 import { hookstate, type State, useHookstate } from "@hookstate/core"
 import { toast } from "sonner"
 import { useProjectState, type ProjectWrapState } from "../projects"
+import { useAuthState, type AuthWrapState } from "../auth"
 
 export interface Client {
     id: string
@@ -53,7 +54,7 @@ const state = hookstate<ClientsState>({
     err: "",
 })
 
-const wrapState = (state: State<ClientsState>, project: ProjectWrapState) => ({
+const wrapState = (state: State<ClientsState>, project: ProjectWrapState, auth: AuthWrapState) => ({
     fetchClients: () => {
         if (state.loadingClients.value) {
             console.warn("Already loading, ignoring new fetch request");
@@ -62,7 +63,7 @@ const wrapState = (state: State<ClientsState>, project: ProjectWrapState) => ({
         state.loadingClients.set(true);
         const url = `${API_SERVER}/client/v1`;
         //mormal fetch
-        const loadingResolve = fetch(url, {
+        const loadingResolve = auth.fetch(url, {
             headers: {
                 "Content-Type": "application/json",
                 "X-Project-Ids": project.project?.id || "",
@@ -96,7 +97,7 @@ const wrapState = (state: State<ClientsState>, project: ProjectWrapState) => ({
         state.creatingClient.set(true);
         const url = `${API_SERVER}/client/v1/`;
         //mormal fetch
-        const loadingResolve = fetch(url, {
+        const loadingResolve = auth.fetch(url, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -135,7 +136,7 @@ const wrapState = (state: State<ClientsState>, project: ProjectWrapState) => ({
         state.updatingClient.set(true);
         const url = `${API_SERVER}/client/v1/${client.id}`;
         //mormal fetch
-        const loadingResolve = fetch(url, {
+        const loadingResolve = auth.fetch(url, {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json",
@@ -185,4 +186,4 @@ const wrapState = (state: State<ClientsState>, project: ProjectWrapState) => ({
 })
 
 
-export const useClientState = () => wrapState(useHookstate(state), useProjectState())
+export const useClientState = () => wrapState(useHookstate(state), useProjectState(), useAuthState())

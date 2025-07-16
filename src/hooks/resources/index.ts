@@ -2,6 +2,7 @@ import { API_SERVER } from "@/config/config"
 import { hookstate, type State, useHookstate } from "@hookstate/core"
 import { toast } from "sonner"
 import { useProjectState, type ProjectWrapState } from "../projects"
+import { useAuthState, type AuthWrapState } from "../auth"
 
 export interface Resource {
     id: string
@@ -62,7 +63,7 @@ const state = hookstate<ResourceState>({
     currentPage: 1,
 })
 
-const wrapState = (state: State<ResourceState>, project: ProjectWrapState) => ({
+const wrapState = (state: State<ResourceState>, project: ProjectWrapState, auth: AuthWrapState) => ({
     fetchResources: (search: string, page: number, limit: number) => {
         if (state.loadingResources.value) {
             console.warn("Already loading, ignoring new fetch request");
@@ -72,7 +73,7 @@ const wrapState = (state: State<ResourceState>, project: ProjectWrapState) => ({
         const sanirisedSearch = encodeURIComponent(search.trim());
         const url = `${API_SERVER}/resource/v1/search?name=${sanirisedSearch}&description=${sanirisedSearch}&key=${sanirisedSearch}&skip=${(page - 1) * limit}&limit=${limit}`;
         //mormal fetch
-        const loadingResolve = fetch(url, {
+        const loadingResolve = auth.fetch(url, {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
@@ -110,7 +111,7 @@ const wrapState = (state: State<ResourceState>, project: ProjectWrapState) => ({
         state.registeringResource.set(true);
         const url = `${API_SERVER}/resource/v1/`;
         //mormal fetch
-        const loadingResolve = fetch(url, {
+        const loadingResolve = auth.fetch(url, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -149,7 +150,7 @@ const wrapState = (state: State<ResourceState>, project: ProjectWrapState) => ({
         state.updatingResource.set(true);
         const url = `${API_SERVER}/resource/v1/${resource.id}`;
         //mormal fetch
-        const loadingResolve = fetch(url, {
+        const loadingResolve = auth.fetch(url, {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json",
@@ -207,4 +208,4 @@ const wrapState = (state: State<ResourceState>, project: ProjectWrapState) => ({
 })
 
 
-export const useResourceState = () => wrapState(useHookstate(state), useProjectState())
+export const useResourceState = () => wrapState(useHookstate(state), useProjectState(), useAuthState())

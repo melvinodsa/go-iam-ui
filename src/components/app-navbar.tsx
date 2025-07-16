@@ -37,7 +37,7 @@ const AppNavbar = () => {
                     ))}
                 </BreadcrumbList>
             </Breadcrumb>
-            {!authState.clientAvailable && (
+            {!authState.clientAvailable && !authState.loadingAuth && (
                 <Alert variant="destructive" className="w-80">
                     <AlertCircleIcon />
                     <AlertTitle>Client not setup for Go IAM</AlertTitle>

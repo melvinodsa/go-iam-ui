@@ -2,6 +2,7 @@ import { API_SERVER } from "@/config/config"
 import { hookstate, type State, useHookstate } from "@hookstate/core"
 import { toast } from "sonner"
 import { useProjectState, type ProjectWrapState } from "../projects"
+import { useAuthState, type AuthWrapState } from "../auth"
 
 
 export interface ResourceItem {
@@ -76,7 +77,7 @@ const state = hookstate<UserState>({
     currentPage: 1,
 })
 
-const wrapState = (state: State<UserState>, project: ProjectWrapState) => ({
+const wrapState = (state: State<UserState>, project: ProjectWrapState, auth: AuthWrapState) => ({
     fetchUsers: (search: string, page: number, limit: number) => {
         if (state.loadingUsers.value) {
             console.warn("Already loading, ignoring new fetch request");
@@ -86,7 +87,7 @@ const wrapState = (state: State<UserState>, project: ProjectWrapState) => ({
         const sanirisedSearch = encodeURIComponent(search.trim());
         const url = `${API_SERVER}/user/v1/?query=${sanirisedSearch}&skip=${(page - 1) * limit}&limit=${limit}`;
         //mormal fetch
-        const loadingResolve = fetch(url, {
+        const loadingResolve = auth.fetch(url, {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
@@ -124,7 +125,7 @@ const wrapState = (state: State<UserState>, project: ProjectWrapState) => ({
         state.registeringUser.set(true);
         const url = `${API_SERVER}/user/v1/`;
         //mormal fetch
-        const loadingResolve = fetch(url, {
+        const loadingResolve = auth.fetch(url, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -163,7 +164,7 @@ const wrapState = (state: State<UserState>, project: ProjectWrapState) => ({
         state.updatingUser.set(true);
         const url = `${API_SERVER}/user/v1/${user.id}`;
         //mormal fetch
-        const loadingResolve = fetch(url, {
+        const loadingResolve = auth.fetch(url, {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json",
@@ -202,7 +203,7 @@ const wrapState = (state: State<UserState>, project: ProjectWrapState) => ({
         state.updatingUser.set(true);
         const url = `${API_SERVER}/user/v1/${id}/roles`;
         //normal fetch
-        const loadingResolve = fetch(url, {
+        const loadingResolve = auth.fetch(url, {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json",
@@ -255,4 +256,4 @@ const wrapState = (state: State<UserState>, project: ProjectWrapState) => ({
 })
 
 
-export const useUserState = () => wrapState(useHookstate(state), useProjectState())
+export const useUserState = () => wrapState(useHookstate(state), useProjectState(), useAuthState())

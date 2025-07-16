@@ -91,9 +91,9 @@ const UpdateClient = (props: UpdateClientProps) => {
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
-                    <DialogTitle>Update Project</DialogTitle>
+                    <DialogTitle>Update Client</DialogTitle>
                     <DialogDescription>
-                        Update the existing project in the system
+                        Update the existing client in the system
                     </DialogDescription>
                 </DialogHeader>
                 <div className="grid gap-4">

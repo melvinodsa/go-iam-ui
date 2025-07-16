@@ -1,6 +1,7 @@
 import { API_SERVER } from "@/config/config"
 import { hookstate, type ImmutableArray, type ImmutableObject, type State, useHookstate } from "@hookstate/core"
 import { toast } from "sonner"
+import { useAuthState, type AuthWrapState } from "../auth"
 
 export interface Project {
     id: string
@@ -69,7 +70,7 @@ export interface ProjectWrapState {
     project: ImmutableObject<Project | null>
 }
 
-const wrapState = (state: State<ProjectState>): ProjectWrapState => ({
+const wrapState = (state: State<ProjectState>, authState: AuthWrapState): ProjectWrapState => ({
     fetchProjects: (search: string) => {
         if (state.loadingProjects.value) {
             console.warn("Already loading, ignoring new fetch request");
@@ -79,7 +80,7 @@ const wrapState = (state: State<ProjectState>): ProjectWrapState => ({
         const sanirisedSearch = encodeURIComponent(search.trim());
         const url = `${API_SERVER}/project/v1?name=${sanirisedSearch}&description=${sanirisedSearch}`;
         //mormal fetch
-        const loadingResolve = fetch(url)
+        const loadingResolve = authState.fetch(url)
             .then((response) => {
                 if (!response.ok) {
                     throw new Error("Network response was not ok");
@@ -112,7 +113,7 @@ const wrapState = (state: State<ProjectState>): ProjectWrapState => ({
         state.creatingProject.set(true);
         const url = `${API_SERVER}/project/v1/`;
         //mormal fetch
-        const loadingResolve = fetch(url, {
+        const loadingResolve = authState.fetch(url, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -150,7 +151,7 @@ const wrapState = (state: State<ProjectState>): ProjectWrapState => ({
         state.updatingProject.set(true);
         const url = `${API_SERVER}/project/v1/${project.id}`;
         //mormal fetch
-        const loadingResolve = fetch(url, {
+        const loadingResolve = authState.fetch(url, {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json",
@@ -211,4 +212,4 @@ const wrapState = (state: State<ProjectState>): ProjectWrapState => ({
 })
 
 
-export const useProjectState = () => wrapState(useHookstate(state))
+export const useProjectState = () => wrapState(useHookstate(state), useAuthState())

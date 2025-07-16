@@ -25,7 +25,6 @@ const wrapState = (state: State<NavState>) => ({
         state.pages.set([...JSON.parse(JSON.stringify(state.pages.value)), page])
     },
     pages: state.pages.value,
-    path: state.path.values,
 })
 
 
