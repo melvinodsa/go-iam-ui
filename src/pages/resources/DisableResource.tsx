@@ -24,7 +24,6 @@ const DisableResource = (props: DisableResourceProps) => {
     const [dialogOpen, setDialogOpen] = useState(false);
 
     const handleDisable = useCallback(() => {
-        console.log("Disabling resource with ID:", props.data);
         state.updateResource(Object.assign({}, props.data, {
             enabled: false,
             updated_at: new Date().toISOString(),

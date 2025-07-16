@@ -17,9 +17,9 @@ import UsersListPage from "./pages/users"
 
 export default function App() {
   return (
-    <BrowserRouter>
-      <SidebarProvider>
-        <AppSidebar />
+    <SidebarProvider>
+      <AppSidebar />
+      <BrowserRouter>
         <SidebarInset>
           <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
             <SidebarTrigger className="-ml-1" />
@@ -54,7 +54,7 @@ export default function App() {
             </Routes>
           </div>
         </SidebarInset>
-      </SidebarProvider>
-    </BrowserRouter>
+      </BrowserRouter>
+    </SidebarProvider>
   )
 }

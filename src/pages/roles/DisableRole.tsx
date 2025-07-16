@@ -24,7 +24,6 @@ const DisableRole = (props: DisableRoleProps) => {
     const [dialogOpen, setDialogOpen] = useState(false);
 
     const handleDisable = useCallback(() => {
-        console.log("Disabling role with ID:", props.data);
         state.updateRole(Object.assign({}, props.data, {
             enabled: false,
             updated_at: new Date().toISOString(),

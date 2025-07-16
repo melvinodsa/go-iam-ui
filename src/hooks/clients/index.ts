@@ -12,6 +12,7 @@ export interface Client {
     redirect_urls: string[]
     project_id: string
     default_auth_provider_id: string
+    go_iam_client: boolean
     enabled: boolean
     created_at: string
     created_by: string

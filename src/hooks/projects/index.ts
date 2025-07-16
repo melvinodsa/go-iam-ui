@@ -33,6 +33,7 @@ interface ProjectState {
     updatingProject: boolean
     creatingProject: boolean
     err: string
+    loadedProjects: boolean
     createdProject: boolean
     updatedProject: boolean
 }
@@ -45,6 +46,7 @@ const state = hookstate<ProjectState>({
     creatingProject: false,
     createdProject: false,
     updatedProject: false,
+    loadedProjects: false,
     err: "",
 })
 
@@ -61,6 +63,7 @@ export interface ProjectWrapState {
     loadingProjects: boolean
     updatingProject: boolean
     creatingProject: boolean
+    loadedProjects: boolean
     err: string
     projects: ImmutableArray<Project>
     project: ImmutableObject<Project | null>
@@ -89,6 +92,7 @@ const wrapState = (state: State<ProjectState>): ProjectWrapState => ({
                     (state.project as State<Project | null>).set(data.data[0] || null);
                 }
                 state.loadingProjects.set(false);
+                state.loadedProjects.set(true);
             })
             .catch((error) => {
                 state.loadingProjects.set(false);
@@ -200,6 +204,7 @@ const wrapState = (state: State<ProjectState>): ProjectWrapState => ({
     loadingProjects: state.loadingProjects.value,
     updatingProject: state.updatingProject.value,
     creatingProject: state.creatingProject.value,
+    loadedProjects: state.loadedProjects.value,
     err: state.err.value,
     projects: state.projects.value,
     project: state.project.value,

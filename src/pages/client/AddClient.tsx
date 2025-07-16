@@ -26,13 +26,16 @@ import {
     SelectValue,
 } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
-import { useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import { useProjectState } from "@/hooks/projects"
 import { useClientState } from "@/hooks/clients"
 import { useAuthProviderState } from "@/hooks/authproviders"
+import { Checkbox } from "@/components/ui/checkbox"
+import { useAuthState } from "@/hooks/auth"
 
 const AddClient = () => {
     const state = useClientState();
+    const authState = useAuthState();
     const projectState = useProjectState();
     const authProviderState = useAuthProviderState();
     const [dialogOpen, setDialogOpen] = useState(false);
@@ -41,34 +44,41 @@ const AddClient = () => {
     const [tags, setTags] = useState("");
     const [redirectUrls, setRedirectUrls] = useState("");
     const [defaultAuthProviderId, setDefaultAuthProviderId] = useState("");
+    const [goIamClient, setGoIamClient] = useState(false);
 
+    const client = useMemo(() => ({
+        id: "",
+        name: name,
+        description: description,
+        secret: "",
+        tags: tags.split(",").map(tag => tag.trim()), // Split tags by comma and trim whitespace
+        redirect_urls: redirectUrls.split(",").map(url => url.trim()), // Split redirect URLs by comma and trim whitespace
+        project_id: projectState.project?.id || "",
+        default_auth_provider_id: defaultAuthProviderId,
+        enabled: true,
+        go_iam_client: goIamClient,
+        created_at: new Date().toISOString(),
+        created_by: "system", // This should be replaced with the actual user ID
+        updated_at: new Date().toISOString(),
+        updated_by: "system", // This should be replaced with the actual user ID
+    }), [name, description, tags, redirectUrls, defaultAuthProviderId, projectState.project?.id, goIamClient]);
 
-    const handleSubmit = useCallback(() => {
-        const client = {
-            id: "",
-            name: name,
-            description: description,
-            secret: "",
-            tags: tags.split(",").map(tag => tag.trim()), // Split tags by comma and trim whitespace
-            redirect_urls: redirectUrls.split(",").map(url => url.trim()), // Split redirect URLs by comma and trim whitespace
-            project_id: projectState.project?.id || "",
-            default_auth_provider_id: defaultAuthProviderId,
-            enabled: true,
-            created_at: new Date().toISOString(),
-            created_by: "system", // This should be replaced with the actual user ID
-            updated_at: new Date().toISOString(),
-            updated_by: "system", // This should be replaced with the actual user ID
-        };
-        state.createClient(client)
-    }, [name, description, tags, redirectUrls, defaultAuthProviderId, projectState.project?.id]);
     useEffect(() => {
         if (state.createdClient) {
             // Close the dialog or reset the form
             setDialogOpen(false);
             state.resetCreatedClient(); // Reset the created client state
             state.fetchClients(); // Fetch clients after creation
+            if (client.go_iam_client && !authState.clientAvailable) {
+                authState.fetchMe();
+            }
         }
-    }, [state.createdClient]);
+    }, [state.createdClient, client.go_iam_client, authState.clientAvailable, authState.fetchMe]);
+
+
+    const handleSubmit = useCallback(() => {
+        state.createClient(client)
+    }, [state.createClient, client]);
     return (
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
@@ -113,6 +123,10 @@ const AddClient = () => {
                             </SelectGroup>
                         </SelectContent>
                     </Select>
+                    <div className="flex items-center gap-3">
+                        <Checkbox id="terms" checked={goIamClient} disabled={authState.clientAvailable} onCheckedChange={value => setGoIamClient(value === true || value === 'indeterminate')} />
+                        <Label htmlFor="terms">Set as Go IAM Client</Label>
+                    </div>
                 </div>
                 <DialogFooter>
                     <DialogClose asChild>

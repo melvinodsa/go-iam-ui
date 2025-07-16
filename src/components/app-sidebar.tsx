@@ -21,6 +21,7 @@ import {
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "./ui/select"
 import { useNavState } from "@/hooks/nav"
 import { useProjectState } from "@/hooks/projects"
+import { useAuthState } from "@/hooks/auth"
 
 // This is sample data.
 const data = {
@@ -66,11 +67,9 @@ const data = {
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const state = useNavState();
+  const authState = useAuthState();
   const projectsState = useProjectState();
   const [openIndicies, setOpenIndicies] = React.useState<number[]>([]);
-  React.useEffect(() => {
-    projectsState.fetchProjects("");
-  }, []);
 
   React.useEffect(() => {
     const ind = data.navMain.findIndex(item => state.pages[state.pages.length - 1].section === item.title)
@@ -78,6 +77,15 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       setOpenIndicies(openIndicies.concat(ind))
     }
   }, [state.pages])
+
+  React.useEffect(() => {
+    if (!authState.loadedState) {
+      authState.fetchMe()
+    }
+    if (authState.loadedState && !projectsState.loadedProjects) {
+      projectsState.fetchProjects("");
+    }
+  }, [authState.loadedState, projectsState.loadedProjects]);
 
   const projectChange = React.useCallback((value: string) => {
     projectsState.setProject(value);

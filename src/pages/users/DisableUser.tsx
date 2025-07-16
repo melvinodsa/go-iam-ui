@@ -24,7 +24,6 @@ const DisableUser = (props: DisableUserProps) => {
     const [dialogOpen, setDialogOpen] = useState(false);
 
     const handleDisable = useCallback(() => {
-        console.log("Disabling user with ID:", props.data);
         state.updateUser(Object.assign({}, props.data, {
             enabled: false,
             updated_at: new Date().toISOString(),
