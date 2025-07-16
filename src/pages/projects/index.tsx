@@ -61,7 +61,7 @@ const ProjectsListPage = () => {
                                 )}</TableCell>
                                 <TableCell>{format(new Date(project.updated_at || project.created_at))}</TableCell>
                                 <TableCell>
-                                    <UpdateProject data={JSON.parse(JSON.stringify(project))} />
+                                    {project.name.trim() !== "Default Project" && <UpdateProject data={JSON.parse(JSON.stringify(project))} />}
                                 </TableCell>
                             </TableRow>
                         ))}

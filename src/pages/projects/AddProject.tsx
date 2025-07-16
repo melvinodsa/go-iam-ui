@@ -51,6 +51,8 @@ const AddProject = () => {
             state.fetchProjects(""); // Fetch projects after creation
         }
     }, [state.createdProject]);
+
+    const isValid = name.trim() !== "" && name.trim() !== "Default Project"
     return (
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
@@ -69,6 +71,9 @@ const AddProject = () => {
                     <div className="grid gap-3">
                         <Label htmlFor="name-1">Name</Label>
                         <Input id="name-1" name="name" placeholder="My superhero project" value={name} onChange={(e) => setName(e.target.value)} />
+                        {name.trim() === "Default Project" && (
+                            <p className="text-red-500 text-sm">Project name cannot be "Default Project"</p>
+                        )}
                     </div>
                     <div className="grid gap-3">
                         <Label htmlFor="tags-1">Tags</Label>
@@ -83,7 +88,7 @@ const AddProject = () => {
                     <DialogClose asChild>
                         <Button variant="outline">Cancel</Button>
                     </DialogClose>
-                    <Button type="submit" onClick={handleSubmit} disabled={state.creatingProject}>
+                    <Button type="submit" onClick={handleSubmit} disabled={state.creatingProject || !isValid}>
                         {state.creatingProject ? (
                             <><Loader2Icon className="animate-spin" /> Saving changes...</>
                         ) : (
