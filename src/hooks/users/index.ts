@@ -194,6 +194,45 @@ const wrapState = (state: State<UserState>, project: ProjectWrapState) => ({
             error: err => err.message || "Failed to update user",
         });
     },
+    updateRole: (id: string, roles: { to_be_added: string[], to_be_removed: string[] }) => {
+        if (state.updatingUser.value) {
+            console.warn("Already updating, ignoring new update request");
+            return;
+        }
+        state.updatingUser.set(true);
+        const url = `${API_SERVER}/user/v1/${id}/roles`;
+        //normal fetch
+        const loadingResolve = fetch(url, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                "X-Project-Ids": project.project?.id || "",
+            },
+            body: JSON.stringify(roles),
+        })
+            .then((response) => {
+                if (!response.ok) {
+                    throw new Error("Network response was not ok");
+                }
+                return response.json();
+            })
+            .then((data: UserResponse) => {
+                if (!data.success) {
+                    throw new Error(data.message || "Failed to update user roles");
+                }
+                state.updatedUser.set(true);
+                state.updatingUser.set(false);
+            })
+            .catch((error) => {
+                state.updatingUser.set(false);
+                throw new Error(`Failed to update user roles: ${error.message}`);
+            });
+        toast.promise(loadingResolve, {
+            loading: "Updating user roles...",
+            success: "User roles updated successfully",
+            error: err => err.message || "Failed to update user roles",
+        });
+    },
     resetError: () => {
         state.err.set("");
     },

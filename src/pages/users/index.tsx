@@ -18,6 +18,7 @@ import { useUserState } from "@/hooks/users"
 import AddUser from "./AddUser"
 import DisableUser from "./DisableUser"
 import UpdateUser from "./UpdateUser"
+import UpdateRole from "./UpdateRole"
 
 const UsersListPage = () => {
     const navState = useNavState()
@@ -101,6 +102,7 @@ const UsersListPage = () => {
                                 <TableCell>{format(new Date(user.updated_at || user.created_at))}</TableCell>
                                 <TableCell>
                                     <UpdateUser data={user} />
+                                    <UpdateRole data={user} />
                                     <DisableUser data={user} />
                                 </TableCell>
                             </TableRow>
