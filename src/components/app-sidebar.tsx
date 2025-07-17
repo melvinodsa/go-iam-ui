@@ -8,6 +8,7 @@ import {
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarGroup,
   SidebarHeader,
   SidebarMenu,
@@ -23,6 +24,8 @@ import { useNavState } from "@/hooks/nav"
 import { useProjectState } from "@/hooks/projects"
 import { useAuthState } from "@/hooks/auth"
 import { useLocation, useNavigate } from "react-router-dom"
+import { NavUser } from "./nav-user"
+import { ProjectSwitcher } from "./project-switcher"
 
 // This is sample data.
 const data = {
@@ -68,8 +71,6 @@ const data = {
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const state = useNavState();
-  const authState = useAuthState();
-  const projectsState = useProjectState();
   const [openIndicies, setOpenIndicies] = React.useState<number[]>([]);
 
   React.useEffect(() => {
@@ -79,50 +80,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     }
   }, [state.pages])
 
-  React.useEffect(() => {
-    if (!authState.loadedState) {
-      authState.fetchMe()
-    }
-    if (authState.loadedState && !projectsState.loadedProjects) {
-      projectsState.fetchProjects("");
-    }
-  }, [authState.loadedState, projectsState.loadedProjects]);
-
-  const projectChange = React.useCallback((value: string) => {
-    projectsState.setProject(value);
-  }, [projectsState]);
   return (
     <Sidebar {...props}>
       <SidebarHeader>
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton size="lg" asChild>
-              <a href="#">
-                <div className="text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
-                  <img src="/logo.png" alt="Go IAM Logo" className="h-8 w-8 rounded-lg" />
-                </div>
-                <div className="flex flex-col gap-0.5 leading-none">
-                  <span className="font-medium">Go IAM</span>
-                </div>
-              </a>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
-        <Select value={projectsState.project?.id || ""} onValueChange={projectChange}>
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Select a project" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectGroup>
-              <SelectLabel>{projectsState.project?.name || "Select a project"}</SelectLabel>
-              {projectsState.projects.map((project) => (
-                <SelectItem key={project.id} value={project.id}>
-                  {project.name}
-                </SelectItem>
-              ))}
-            </SelectGroup>
-          </SelectContent>
-        </Select>
+        <ProjectSwitcher />
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
@@ -170,6 +131,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           </SidebarMenu>
         </SidebarGroup>
       </SidebarContent>
+      <SidebarFooter>
+        <NavUser />
+      </SidebarFooter>
       <SidebarRail />
     </Sidebar>
   )

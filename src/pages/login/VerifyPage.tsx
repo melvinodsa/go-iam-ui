@@ -1,6 +1,6 @@
 import { Progress } from "@/components/ui/progress"
 import { useAuthState } from "@/hooks/auth"
-import { use, useEffect, useState } from "react"
+import { useEffect, useState } from "react"
 import { useNavigate, useSearchParams } from "react-router-dom";
 
 
@@ -14,10 +14,10 @@ export default function VerifyPage() {
         return () => clearTimeout(timer)
     }, [])
     useEffect(() => {
-        if (!state.verifing) {
+        if (!state.verifying) {
             setProgress(100)
         }
-    }, [state.verifing])
+    }, [state.verifying])
     useEffect(() => {
         if (state.verified) {
             navigate('/', { replace: true });

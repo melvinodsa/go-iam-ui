@@ -8,11 +8,27 @@ export interface Setup {
 }
 
 
+export interface User {
+    name: string
+    email: string
+    id: string
+    profile_pic: string
+    created_at: string
+    updated_at: string
+    created_by: string
+    updated_by: string
+    enabled: boolean
+    expiry: string
+    resources: { [key: string]: { id: string, key: string, name: string } }
+    roles: { [key: string]: { id: string, name: string } }
+}
+
 interface SetupMeResponse {
     success: boolean
     message: string
     data: {
         setup: Setup
+        user: User
     }
 }
 
@@ -27,6 +43,7 @@ interface VerifyResponse {
 
 interface AuthState {
     clientAvailable: boolean
+    user?: User
     loadingAuth: boolean
     verifying: boolean
     client_id: string
@@ -53,12 +70,14 @@ export interface AuthWrapState {
     fetchMe: () => void
     verify: (code: string) => void
     fetch: (url: string, init?: RequestInit) => Promise<Response>
+    logout: () => void
     err: string
     loadedState: boolean
     clientAvailable: boolean
     clientId: string
     loadingAuth: boolean
-    verifing: boolean
+    verifying: boolean
+    user?: User
     verified: boolean // This is used to check if the user has verified their account
 }
 
@@ -70,12 +89,17 @@ const wrapState = (state: State<AuthState>): AuthWrapState => ({
         }
         state.loadingAuth.set(true);
         const url = `${API_SERVER}/me/v1/dashboard`;
+
+        const headers: HeadersInit = {
+            "Content-Type": "application/json",
+        };
+        if (state.token.value && state.token.value.length > 0) {
+            headers["Authorization"] = `Bearer ${state.token.value}`;
+        }
+
         //mormal fetch
         const loadingResolve = fetch(url, {
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${state.token.value}`,
-            },
+            headers,
         })
             .then((response) => {
                 if (!response.ok && response.status !== 401) {
@@ -88,8 +112,9 @@ const wrapState = (state: State<AuthState>): AuthWrapState => ({
                 return response.json();
             })
             .then((data: SetupMeResponse) => {
-                state.clientAvailable.set(data.data.setup.client_added);
-                state.client_id.set(data.data.setup.client_id);
+                state.clientAvailable.set(data.data?.setup.client_added);
+                state.client_id.set(data.data?.setup.client_id);
+                state.user.set(data.data?.user);
                 state.loadedState.set(true)
                 state.loadingAuth.set(false);
             })
@@ -140,12 +165,16 @@ const wrapState = (state: State<AuthState>): AuthWrapState => ({
         });
     },
     fetch: (url: string, init?: RequestInit) => {
+        if (state.token.value && state.token.value.length > 0) {
+            if (!init) {
+                init = {};
+            }
+            const headers: Record<string, string> = (init.headers as Record<string, string>) || {};
+            headers["Authorization"] = `Bearer ${state.token.value}`;
+            init.headers = headers;
+        }
         return fetch(url, {
             ...init,
-            headers: {
-                ...(init?.headers || {}),
-                "Authorization": `Bearer ${state.token.value}`,
-            },
         }).then((response) => {
             if (response.status === 401) {
                 window.location.href = "/login";
@@ -153,12 +182,23 @@ const wrapState = (state: State<AuthState>): AuthWrapState => ({
             return response;
         });
     },
+    logout: () => {
+        state.clientAvailable.set(false);
+        state.client_id.set("");
+        state.token.set("");
+        localStorage.removeItem("access_token");
+        state.user.set(undefined);
+        state.loadedState.set(false);
+        state.verified.set(false);
+        window.location.href = "/login";
+    },
     err: state.err.value,
     loadedState: state.loadedState.value,
     clientAvailable: state.clientAvailable.value,
     clientId: state.client_id.value,
     loadingAuth: state.loadingAuth.value,
-    verifing: state.verifying.value,
+    verifying: state.verifying.value,
+    user: state.user.value,
     verified: state.verified.value,
 })
 
