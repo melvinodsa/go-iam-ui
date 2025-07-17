@@ -1,0 +1,48 @@
+name: Build and Attach to Release
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout the repository
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Setup Node.js and pnpm
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20" # Or your project version
+          cache: "pnpm"
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      # Install dependencies
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # Build the project
+      - name: Build project
+        run: pnpm build
+
+      # Archive the build output
+      - name: Zip build output
+        run: |
+          zip -r dist.zip dist
+
+      # Upload as GitHub Release Asset
+      - name: Upload release asset
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist.zip
+          tag_name: ${{ github.event.release.tag_name }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
