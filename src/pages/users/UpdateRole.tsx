@@ -99,8 +99,8 @@ const UpdateRole = (props: UpdateRoleProps) => {
                             value: res.id,
                         }))}
                         loadOptions={searchRoles}
-                        title="Choose Resources"
-                        placeholder="Update resources for the role"
+                        title="Choose Roles"
+                        placeholder="Update roles for the user"
                     />
                 </div>
 

@@ -68,25 +68,25 @@ export function ProjectSwitcher() {
                         sideOffset={4}
                     >
                         <DropdownMenuLabel className="text-muted-foreground text-xs">
-                            Teams
+                            Projects
                         </DropdownMenuLabel>
-                        {projectsState.projects.map((project, index) => (
+                        {projectsState.projects.map((project) => (
                             <DropdownMenuItem
                                 key={project.name}
                                 onClick={() => projectChange(project.id)}
                                 className="gap-2 p-2"
                             >
                                 {project.name}
-                                <DropdownMenuShortcut>⌘{index + 1}</DropdownMenuShortcut>
+                                {/* <DropdownMenuShortcut>⌘{index + 1}</DropdownMenuShortcut> */}
                             </DropdownMenuItem>
                         ))}
-                        <DropdownMenuSeparator />
+                        {/* <DropdownMenuSeparator />
                         <DropdownMenuItem className="gap-2 p-2">
                             <div className="flex size-6 items-center justify-center rounded-md border bg-transparent">
                                 <Plus className="size-4" />
                             </div>
                             <div className="text-muted-foreground font-medium">Add team</div>
-                        </DropdownMenuItem>
+                        </DropdownMenuItem> */}
                     </DropdownMenuContent>
                 </DropdownMenu>
             </SidebarMenuItem>

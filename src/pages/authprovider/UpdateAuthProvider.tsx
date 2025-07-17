@@ -75,9 +75,9 @@ const UpdateAuthProvider = (props: UpdateAuthProviderProps) => {
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
-                    <DialogTitle>Update Project</DialogTitle>
+                    <DialogTitle>Update Auth Provider</DialogTitle>
                     <DialogDescription>
-                        Update the existing project in the system
+                        Update the existing auth provider in the system
                     </DialogDescription>
                 </DialogHeader>
                 <div className="grid gap-4">
@@ -134,23 +134,22 @@ interface ParamUpdateProps {
 const GoogleParams = (props: ParamUpdateProps) => {
     const [params, setParams] = useState<Params[]>(props.params);
 
-    const handleChange = (index: number, value: string) => {
-        setParams((prev) =>
-            prev.map((param, i) =>
-                i === index ? { ...param, value } : param
-            )
-        );
-        props.onChange(params);
+    const handleChange = (key: string, value: string) => {
+        const newParams = params.map((param) =>
+            param.key === key ? { ...param, value } : param
+        )
+        setParams(newParams);
+        props.onChange(newParams);
     };
 
     return (
         <div>
-            {props.params.map((param, index) => (
-                <div key={index} className="flex items-center gap-2 mb-2">
+            {props.params.map((param) => (
+                <div key={param.key} className="flex items-center gap-2 mb-2">
                     <Input
                         placeholder={param.label}
                         value={param.value}
-                        onChange={(e) => handleChange(index, e.target.value)}
+                        onChange={(e) => handleChange(param.key, e.target.value)}
                     />
                 </div>
             ))}

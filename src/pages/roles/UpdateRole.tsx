@@ -74,9 +74,9 @@ const UpdateRole = (props: UpdateRoleProps) => {
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
-                    <DialogTitle>Update Resource</DialogTitle>
+                    <DialogTitle>Update Role</DialogTitle>
                     <DialogDescription>
-                        Update the existing resource in the system
+                        Update the existing role in the system
                     </DialogDescription>
                 </DialogHeader>
                 <div className="grid gap-4">

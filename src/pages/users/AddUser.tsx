@@ -69,9 +69,9 @@ const AddUser = () => {
             </DialogTrigger>
             <DialogContent className="sm:max-w-[625px]">
                 <DialogHeader>
-                    <DialogTitle>Register Resource</DialogTitle>
+                    <DialogTitle>Register User</DialogTitle>
                     <DialogDescription>
-                        Register a resource in the system
+                        Register a user in the system
                     </DialogDescription>
                 </DialogHeader>
                 <div className="grid gap-4">
