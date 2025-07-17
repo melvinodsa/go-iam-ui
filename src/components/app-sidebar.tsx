@@ -1,5 +1,5 @@
 import * as React from "react"
-import { GalleryVerticalEnd, Minus, Plus } from "lucide-react"
+import { Minus, Plus } from "lucide-react"
 import {
   Collapsible,
   CollapsibleContent,
@@ -19,11 +19,7 @@ import {
   SidebarMenuSubItem,
   SidebarRail,
 } from "@/components/ui/sidebar"
-import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "./ui/select"
 import { useNavState } from "@/hooks/nav"
-import { useProjectState } from "@/hooks/projects"
-import { useAuthState } from "@/hooks/auth"
-import { useLocation, useNavigate } from "react-router-dom"
 import { NavUser } from "./nav-user"
 import { ProjectSwitcher } from "./project-switcher"
 
