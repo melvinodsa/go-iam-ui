@@ -80,13 +80,13 @@ const state = hookstate<UserState>({
 const wrapState = (state: State<UserState>, project: ProjectWrapState, auth: AuthWrapState) => ({
     fetchUsers: (search: string, page: number, limit: number) => {
         if (state.loadingUsers.value) {
-            console.warn("Already loading, ignoring new fetch request");
+            console.debug("Already loading, ignoring new fetch request");
             return;
         }
         state.loadingUsers.set(true);
         const sanirisedSearch = encodeURIComponent(search.trim());
         const url = `${API_SERVER}/user/v1/?query=${sanirisedSearch}&skip=${(page - 1) * limit}&limit=${limit}`;
-        //mormal fetch
+        //normal fetch
         const loadingResolve = auth.fetch(url, {
             method: "GET",
             headers: {
@@ -119,12 +119,12 @@ const wrapState = (state: State<UserState>, project: ProjectWrapState, auth: Aut
     },
     registerUser: (user: User) => {
         if (state.registeringUser.value) {
-            console.warn("Already registering, ignoring new create request");
+            console.debug("Already registering, ignoring new create request");
             return;
         }
         state.registeringUser.set(true);
         const url = `${API_SERVER}/user/v1/`;
-        //mormal fetch
+        //normal fetch
         const loadingResolve = auth.fetch(url, {
             method: "POST",
             headers: {
@@ -158,12 +158,12 @@ const wrapState = (state: State<UserState>, project: ProjectWrapState, auth: Aut
     },
     updateUser: (user: User) => {
         if (state.updatingUser.value) {
-            console.warn("Already updating, ignoring new update request");
+            console.debug("Already updating, ignoring new update request");
             return;
         }
         state.updatingUser.set(true);
         const url = `${API_SERVER}/user/v1/${user.id}`;
-        //mormal fetch
+        //normal fetch
         const loadingResolve = auth.fetch(url, {
             method: "PUT",
             headers: {
@@ -197,7 +197,7 @@ const wrapState = (state: State<UserState>, project: ProjectWrapState, auth: Aut
     },
     updateRole: (id: string, roles: { to_be_added: string[], to_be_removed: string[] }) => {
         if (state.updatingUser.value) {
-            console.warn("Already updating, ignoring new update request");
+            console.debug("Already updating, ignoring new update request");
             return;
         }
         state.updatingUser.set(true);

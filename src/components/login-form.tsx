@@ -23,12 +23,10 @@ export function LoginForm({
 
 
   useEffect(() => {
-    if (!state.loadedState) {
-      state.fetchMe();
+    if (!state.clientAvailable) {
+      state.fetchMe(true);
     }
   }, []);
-
-  console.log("LoginForm state:", state.clientId);
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>

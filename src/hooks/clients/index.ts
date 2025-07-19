@@ -57,12 +57,12 @@ const state = hookstate<ClientsState>({
 const wrapState = (state: State<ClientsState>, project: ProjectWrapState, auth: AuthWrapState) => ({
     fetchClients: () => {
         if (state.loadingClients.value) {
-            console.warn("Already loading, ignoring new fetch request");
+            console.debug("Already loading, ignoring new fetch request");
             return;
         }
         state.loadingClients.set(true);
         const url = `${API_SERVER}/client/v1`;
-        //mormal fetch
+        //normal fetch
         const loadingResolve = auth.fetch(url, {
             headers: {
                 "Content-Type": "application/json",
@@ -91,12 +91,12 @@ const wrapState = (state: State<ClientsState>, project: ProjectWrapState, auth: 
     },
     createClient: (client: Client) => {
         if (state.creatingClient.value) {
-            console.warn("Already creating, ignoring new create request");
+            console.debug("Already creating, ignoring new create request");
             return;
         }
         state.creatingClient.set(true);
         const url = `${API_SERVER}/client/v1/`;
-        //mormal fetch
+        //normal fetch
         const loadingResolve = auth.fetch(url, {
             method: "POST",
             headers: {
@@ -130,12 +130,12 @@ const wrapState = (state: State<ClientsState>, project: ProjectWrapState, auth: 
     },
     updateClient: (client: Client) => {
         if (state.updatingClient.value) {
-            console.warn("Already updating, ignoring new update request");
+            console.debug("Already updating, ignoring new update request");
             return;
         }
         state.updatingClient.set(true);
         const url = `${API_SERVER}/client/v1/${client.id}`;
-        //mormal fetch
+        //normal fetch
         const loadingResolve = auth.fetch(url, {
             method: "PUT",
             headers: {

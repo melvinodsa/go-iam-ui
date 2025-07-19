@@ -73,13 +73,13 @@ export interface ProjectWrapState {
 const wrapState = (state: State<ProjectState>, authState: AuthWrapState): ProjectWrapState => ({
     fetchProjects: (search: string) => {
         if (state.loadingProjects.value) {
-            console.warn("Already loading, ignoring new fetch request");
+            console.debug("Already loading, ignoring new fetch request");
             return;
         }
         state.loadingProjects.set(true);
         const sanirisedSearch = encodeURIComponent(search.trim());
         const url = `${API_SERVER}/project/v1?name=${sanirisedSearch}&description=${sanirisedSearch}`;
-        //mormal fetch
+        //normal fetch
         const loadingResolve = authState.fetch(url)
             .then((response) => {
                 if (!response.ok) {
@@ -107,12 +107,12 @@ const wrapState = (state: State<ProjectState>, authState: AuthWrapState): Projec
     },
     createProject: (project: Project) => {
         if (state.creatingProject.value) {
-            console.warn("Already creating, ignoring new create request");
+            console.debug("Already creating, ignoring new create request");
             return;
         }
         state.creatingProject.set(true);
         const url = `${API_SERVER}/project/v1/`;
-        //mormal fetch
+        //normal fetch
         const loadingResolve = authState.fetch(url, {
             method: "POST",
             headers: {
@@ -145,12 +145,12 @@ const wrapState = (state: State<ProjectState>, authState: AuthWrapState): Projec
     },
     updateProject: (project: Project) => {
         if (state.updatingProject.value) {
-            console.warn("Already updating, ignoring new update request");
+            console.debug("Already updating, ignoring new update request");
             return;
         }
         state.updatingProject.set(true);
         const url = `${API_SERVER}/project/v1/${project.id}`;
-        //mormal fetch
+        //normal fetch
         const loadingResolve = authState.fetch(url, {
             method: "PUT",
             headers: {
@@ -197,7 +197,7 @@ const wrapState = (state: State<ProjectState>, authState: AuthWrapState): Projec
             localStorage.setItem("selectedProject", JSON.stringify(project));
             window.location.reload(); // Reload to apply the new project context
         } else {
-            console.warn(`Project with id ${id} not found`);
+            console.debug(`Project with id ${id} not found`);
         }
     },
     updatedProject: state.updatedProject.value,

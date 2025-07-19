@@ -52,22 +52,25 @@ interface AuthState {
     redirect: boolean
     loadedState: boolean
     verified: boolean // This is used to check if the user has verified their account
+    localStoreUpdatedAt: string // This is used to check if the local storage has been updated
 }
 
 const state = hookstate<AuthState>({
     clientAvailable: false,
     verifying: false,
-    client_id: "",
+    client_id: localStorage.getItem("client_id") || "",
     token: localStorage.getItem("access_token") || "",
+    user: localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user") || "null") : null,
     loadingAuth: false,
     err: "",
     redirect: false,
     loadedState: false,
     verified: false, // This is used to check if the user has verified their account
+    localStoreUpdatedAt: localStorage.getItem("localStoreUpdatedAt") || "", // This is used to check if the local storage has been updated
 })
 
 export interface AuthWrapState {
-    fetchMe: () => void
+    fetchMe: (dontUpdateTime?: boolean) => void
     verify: (code: string) => void
     fetch: (url: string, init?: RequestInit) => Promise<Response>
     logout: () => void
@@ -82,9 +85,18 @@ export interface AuthWrapState {
 }
 
 const wrapState = (state: State<AuthState>): AuthWrapState => ({
-    fetchMe: () => {
+    fetchMe: (dontUpdateTime?: boolean) => {
+        const lastUpdatedAt = new Date(state.localStoreUpdatedAt.value);
+        const now = new Date();
+        console.debug("Last updated at:", lastUpdatedAt, "Now:", now);
+        if (!dontUpdateTime && now.getTime() - lastUpdatedAt.getTime() < 5 * 60 * 1000) {
+            state.clientAvailable.set(state.client_id.value ? true : false);
+            state.loadedState.set(true)
+            console.debug("Skipping fetchMe as local store was updated recently");
+            return;
+        }
         if (state.loadingAuth.value) {
-            console.warn("Already loading, ignoring new me request");
+            console.debug("Already loading, ignoring new me request");
             return;
         }
         state.loadingAuth.set(true);
@@ -97,7 +109,7 @@ const wrapState = (state: State<AuthState>): AuthWrapState => ({
             headers["Authorization"] = `Bearer ${state.token.value}`;
         }
 
-        //mormal fetch
+        //normal fetch
         const loadingResolve = fetch(url, {
             headers,
         })
@@ -112,10 +124,21 @@ const wrapState = (state: State<AuthState>): AuthWrapState => ({
                 return response.json();
             })
             .then((data: SetupMeResponse) => {
-                state.clientAvailable.set(data.data?.setup.client_added);
+                // local caching variables
+                if (!dontUpdateTime) {
+                    const date = new Date().toISOString()
+                    state.localStoreUpdatedAt.set(date);
+                    localStorage.setItem("localStoreUpdatedAt", date);
+                }
                 state.client_id.set(data.data?.setup.client_id);
+                localStorage.setItem("client_id", data.data?.setup.client_id || "");
                 state.user.set(data.data?.user);
+                localStorage.setItem("user", JSON.stringify(data.data?.user || null));
+                console.debug("Fetched user:", data.data?.user);
+
+                state.clientAvailable.set(data.data?.setup.client_id ? true : false);
                 state.loadedState.set(true)
+
                 state.loadingAuth.set(false);
             })
             .catch((error) => {
@@ -131,12 +154,12 @@ const wrapState = (state: State<AuthState>): AuthWrapState => ({
     },
     verify: (code: string) => {
         if (state.verifying.value) {
-            console.warn("Already loading, ignoring new verify request");
+            console.debug("Already loading, ignoring new verify request");
             return;
         }
         state.verifying.set(true);
         const url = `${API_SERVER}/auth/v1/verify?code=${encodeURIComponent(code)}`;
-        //mormal fetch
+        //normal fetch
         const loadingResolve = fetch(url, {
             headers: {
                 "Content-Type": "application/json",
@@ -177,16 +200,27 @@ const wrapState = (state: State<AuthState>): AuthWrapState => ({
             ...init,
         }).then((response) => {
             if (response.status === 401) {
+                localStorage.setItem("loadedState", "false");
                 window.location.href = "/login";
             }
             return response;
         });
     },
     logout: () => {
-        state.clientAvailable.set(false);
+        // locally cached variables
+        const now = new Date();
+        const updated = now.setMinutes(now.getMinutes() - 5);
+        state.localStoreUpdatedAt.set(new Date(updated).toISOString());
+        localStorage.setItem("localStoreUpdatedAt", new Date(updated).toISOString());
         state.client_id.set("");
+        localStorage.removeItem("client_id");
         state.token.set("");
         localStorage.removeItem("access_token");
+        localStorage.removeItem("user");
+        state.user.set(undefined);
+
+        // reset normal state
+        state.clientAvailable.set(false);
         state.user.set(undefined);
         state.loadedState.set(false);
         state.verified.set(false);

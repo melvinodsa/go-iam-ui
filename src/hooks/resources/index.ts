@@ -66,13 +66,13 @@ const state = hookstate<ResourceState>({
 const wrapState = (state: State<ResourceState>, project: ProjectWrapState, auth: AuthWrapState) => ({
     fetchResources: (search: string, page: number, limit: number) => {
         if (state.loadingResources.value) {
-            console.warn("Already loading, ignoring new fetch request");
+            console.debug("Already loading, ignoring new fetch request");
             return;
         }
         state.loadingResources.set(true);
         const sanirisedSearch = encodeURIComponent(search.trim());
         const url = `${API_SERVER}/resource/v1/search?name=${sanirisedSearch}&description=${sanirisedSearch}&key=${sanirisedSearch}&skip=${(page - 1) * limit}&limit=${limit}`;
-        //mormal fetch
+        //normal fetch
         const loadingResolve = auth.fetch(url, {
             method: "GET",
             headers: {
@@ -105,12 +105,12 @@ const wrapState = (state: State<ResourceState>, project: ProjectWrapState, auth:
     },
     registerResource: (resource: Resource) => {
         if (state.registeringResource.value) {
-            console.warn("Already registering, ignoring new create request");
+            console.debug("Already registering, ignoring new create request");
             return;
         }
         state.registeringResource.set(true);
         const url = `${API_SERVER}/resource/v1/`;
-        //mormal fetch
+        //normal fetch
         const loadingResolve = auth.fetch(url, {
             method: "POST",
             headers: {
@@ -144,12 +144,12 @@ const wrapState = (state: State<ResourceState>, project: ProjectWrapState, auth:
     },
     updateResource: (resource: Resource) => {
         if (state.updatingResource.value) {
-            console.warn("Already registering, ignoring new update request");
+            console.debug("Already registering, ignoring new update request");
             return;
         }
         state.updatingResource.set(true);
         const url = `${API_SERVER}/resource/v1/${resource.id}`;
-        //mormal fetch
+        //normal fetch
         const loadingResolve = auth.fetch(url, {
             method: "PUT",
             headers: {

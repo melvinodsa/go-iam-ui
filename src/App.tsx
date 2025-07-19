@@ -19,7 +19,7 @@ import VerifyPage from "./pages/login/VerifyPage"
 
 export default function App() {
   const location = useLocation();
-  const isLoginPage = location.pathname.startsWith('/login') || location.pathname.startsWith('/verify');
+  const isLoginPage = location.pathname.startsWith('/login') || location.pathname.startsWith('/verify') || location.pathname === "";
   return (
     <SidebarProvider>
       {!isLoginPage && <AppSidebar />}

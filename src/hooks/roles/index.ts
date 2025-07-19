@@ -71,13 +71,13 @@ const state = hookstate<RoleState>({
 const wrapState = (state: State<RoleState>, project: ProjectWrapState, auth: AuthWrapState) => ({
     fetchRoles: (search: string, page: number, limit: number) => {
         if (state.loadingRoles.value) {
-            console.warn("Already loading, ignoring new fetch request");
+            console.debug("Already loading, ignoring new fetch request");
             return;
         }
         state.loadingRoles.set(true);
         const sanirisedSearch = encodeURIComponent(search.trim());
         const url = `${API_SERVER}/role/v1/?query=${sanirisedSearch}&skip=${(page - 1) * limit}&limit=${limit}`;
-        //mormal fetch
+        //normal fetch
         const loadingResolve = auth.fetch(url, {
             method: "GET",
             headers: {
@@ -110,12 +110,12 @@ const wrapState = (state: State<RoleState>, project: ProjectWrapState, auth: Aut
     },
     registerRole: (role: Role) => {
         if (state.registeringRole.value) {
-            console.warn("Already registering, ignoring new create request");
+            console.debug("Already registering, ignoring new create request");
             return;
         }
         state.registeringRole.set(true);
         const url = `${API_SERVER}/role/v1/`;
-        //mormal fetch
+        //normal fetch
         const loadingResolve = auth.fetch(url, {
             method: "POST",
             headers: {
@@ -149,12 +149,12 @@ const wrapState = (state: State<RoleState>, project: ProjectWrapState, auth: Aut
     },
     updateRole: (role: Role) => {
         if (state.updatingRole.value) {
-            console.warn("Already updating, ignoring new update request");
+            console.debug("Already updating, ignoring new update request");
             return;
         }
         state.updatingRole.set(true);
         const url = `${API_SERVER}/role/v1/${role.id}`;
-        //mormal fetch
+        //normal fetch
         const loadingResolve = auth.fetch(url, {
             method: "PUT",
             headers: {
