@@ -54,6 +54,9 @@ const UpdateProject = (props: UpdateProjectProps) => {
             state.fetchProjects(""); // Fetch projects after creation
         }
     }, [state.updatedProject]);
+
+    const isValid = name.trim() !== ""
+    const disabled = state.updatingProject || !isValid;
     return (
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
@@ -87,7 +90,7 @@ const UpdateProject = (props: UpdateProjectProps) => {
                     <DialogClose asChild>
                         <Button variant="outline">Cancel</Button>
                     </DialogClose>
-                    <Button type="submit" onClick={handleSubmit} disabled={state.updatingProject}>
+                    <Button type="submit" onClick={handleSubmit} disabled={disabled}>
                         {state.updatingProject ? (
                             <><Loader2Icon className="animate-spin" /> Saving changes...</>
                         ) : (

@@ -60,6 +60,9 @@ const AddUser = () => {
         state.registerUser(user)
     }, [name, email, phone, projectState.project?.id]);
 
+    const isValid = name.trim() !== "" && email.trim() !== "";
+    const disabled = state.registeringUser || !isValid;
+
     return (
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
@@ -92,7 +95,7 @@ const AddUser = () => {
                     <DialogClose asChild>
                         <Button variant="outline">Cancel</Button>
                     </DialogClose>
-                    <Button type="submit" onClick={handleSubmit} disabled={state.registeringUser}>
+                    <Button type="submit" onClick={handleSubmit} disabled={disabled}>
                         {state.registeringUser ? (
                             <><Loader2Icon className="animate-spin" /> Saving changes...</>
                         ) : (

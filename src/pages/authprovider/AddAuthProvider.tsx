@@ -36,7 +36,7 @@ const AddAuthProvider = () => {
     const [dialogOpen, setDialogOpen] = useState(false);
     const [name, setName] = useState("");
     const [provider, setProvider] = useState("GOOGLE");
-    const [params, setParams] = useState<Params[]>([]);
+    const [params, setParams] = useState<Params[]>(GoogleParamsList);
 
 
     const handleSubmit = useCallback(() => {
@@ -62,6 +62,11 @@ const AddAuthProvider = () => {
             state.fetchAuthProviders(); // Fetch auth providers after creation
         }
     }, [state.createdAuthProvider]);
+
+    const paramsValid = params.reduce<boolean>((acc, param) => {
+        return acc && param.value && param.value.length > 0 ? true : false
+    }, true);
+    const disabled = state.creatingAuthProvider || !name || !paramsValid;
     return (
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
@@ -79,7 +84,7 @@ const AddAuthProvider = () => {
                 <div className="grid gap-4">
                     <div className="grid gap-3">
                         <Label htmlFor="name-1">Name</Label>
-                        <Input id="name-1" name="name" placeholder="My superhero project" value={name} onChange={(e) => setName(e.target.value)} />
+                        <Input id="name-1" name="name" placeholder="Dashboard google auth" value={name} onChange={(e) => setName(e.target.value)} />
                     </div>
                     <Select value={provider} onValueChange={(value) => setProvider(value)}>
                         <SelectTrigger className="w-[180px]">
@@ -107,7 +112,7 @@ const AddAuthProvider = () => {
                     <DialogClose asChild>
                         <Button variant="outline">Cancel</Button>
                     </DialogClose>
-                    <Button type="submit" onClick={handleSubmit} disabled={state.creatingAuthProvider}>
+                    <Button type="submit" onClick={handleSubmit} disabled={disabled}>
                         {state.creatingAuthProvider ? (
                             <><Loader2Icon className="animate-spin" /> Saving changes...</>
                         ) : (
@@ -122,6 +127,12 @@ const AddAuthProvider = () => {
 
 export default AddAuthProvider;
 
+const GoogleParamsList = [
+    { label: "Client ID", value: "", key: "@GOOGLE/CLIENT_ID", is_secret: false },
+    { label: "Client Secret", value: "", key: "@GOOGLE/CLIENT_SECRET", is_secret: true },
+    { label: "Redirect URL", value: "", key: "@GOOGLE/REDIRECT_URL", is_secret: false },
+]
+
 
 interface ParamUpdateProps {
     onChange: (params: Params[]) => void;
@@ -129,29 +140,24 @@ interface ParamUpdateProps {
 }
 
 const GoogleParams = (props: ParamUpdateProps) => {
-    const [params, setParams] = useState<Params[]>([
-        { label: "Client ID", value: "", key: "@GOOGLE/CLIENT_ID", is_secret: false },
-        { label: "Client Secret", value: "", key: "@GOOGLE/CLIENT_SECRET", is_secret: true },
-        { label: "Redirect URL", value: "", key: "@GOOGLE/REDIRECT_URI", is_secret: false },
-    ]);
+    const [params, setParams] = useState<Params[]>(GoogleParamsList);
 
-    const handleChange = (index: number, value: string) => {
-        setParams((prev) =>
-            prev.map((param, i) =>
-                i === index ? { ...param, value } : param
-            )
-        );
-        props.onChange(params);
+    const handleChange = (key: string, value: string) => {
+        const newParams = params.map((param) =>
+            param.key === key ? { ...param, value } : param
+        )
+        setParams(newParams);
+        props.onChange(newParams);
     };
 
     return (
         <div>
-            {params.map((param, index) => (
-                <div key={index} className="flex items-center gap-2 mb-2">
+            {params.map((param) => (
+                <div key={param.key} className="flex items-center gap-2 mb-2">
                     <Input
                         placeholder={param.label}
                         value={param.value}
-                        onChange={(e) => handleChange(index, e.target.value)}
+                        onChange={(e) => handleChange(param.key, e.target.value)}
                     />
                 </div>
             ))}

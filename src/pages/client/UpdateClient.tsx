@@ -72,7 +72,7 @@ const UpdateClient = (props: UpdateClientProps) => {
             state.resetUpdatedClient(); // Reset the created client state
             state.fetchClients(); // Fetch clients after creation
             if (client.go_iam_client && !authState.clientAvailable) {
-                authState.fetchMe();
+                authState.fetchMe(true);
             }
         }
     }, [state.updatedClient, client.go_iam_client, authState.clientAvailable, authState.fetchMe]);
@@ -81,6 +81,8 @@ const UpdateClient = (props: UpdateClientProps) => {
     const handleSubmit = useCallback(() => {
         state.updateClient(client)
     }, [state.updateClient, client]);
+
+    const disabled = state.updatingClient || !name || !description || !redirectUrls;
     return (
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
@@ -99,7 +101,7 @@ const UpdateClient = (props: UpdateClientProps) => {
                 <div className="grid gap-4">
                     <div className="grid gap-3">
                         <Label htmlFor="name-1">Name</Label>
-                        <Input id="name-1" name="name" placeholder="My superhero project" value={name} onChange={(e) => setName(e.target.value)} />
+                        <Input id="name-1" name="name" placeholder="My cool project client" value={name} onChange={(e) => setName(e.target.value)} />
                     </div>
                     <div className="grid gap-3">
                         <Label htmlFor="description-1">Description</Label>
@@ -135,7 +137,7 @@ const UpdateClient = (props: UpdateClientProps) => {
                     <DialogClose asChild>
                         <Button variant="outline">Cancel</Button>
                     </DialogClose>
-                    <Button type="submit" onClick={handleSubmit} disabled={state.updatingClient}>
+                    <Button type="submit" onClick={handleSubmit} disabled={disabled}>
                         {state.updatingClient ? (
                             <><Loader2Icon className="animate-spin" /> Saving changes...</>
                         ) : (

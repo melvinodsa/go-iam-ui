@@ -68,6 +68,9 @@ const AddRole = () => {
         state.registerRole(role)
     }, [name, description, resources, projectState.project?.id]);
 
+    const isValid = name.trim() !== "";
+    const disabled = state.registeringRole || !isValid;
+
     return (
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
@@ -121,7 +124,7 @@ const AddRole = () => {
                     <DialogClose asChild>
                         <Button variant="outline">Cancel</Button>
                     </DialogClose>
-                    <Button type="submit" onClick={handleSubmit} disabled={state.registeringRole}>
+                    <Button type="submit" onClick={handleSubmit} disabled={disabled}>
                         {state.registeringRole ? (
                             <><Loader2Icon className="animate-spin" /> Saving changes...</>
                         ) : (

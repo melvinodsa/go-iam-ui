@@ -64,6 +64,9 @@ const UpdateRole = (props: UpdateRoleProps) => {
             state.fetchRoles("", 1, 10); // Fetch resources after creation
         }
     }, [state.updatedRole]);
+
+    const isValid = name.trim() !== "";
+    const disabled = state.updatingRole || !isValid;
     return (
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
@@ -118,7 +121,7 @@ const UpdateRole = (props: UpdateRoleProps) => {
                     <DialogClose asChild>
                         <Button variant="outline">Cancel</Button>
                     </DialogClose>
-                    <Button type="submit" onClick={handleSubmit} disabled={state.updatingRole}>
+                    <Button type="submit" onClick={handleSubmit} disabled={disabled}>
                         {state.updatingRole ? (
                             <><Loader2Icon className="animate-spin" /> Saving changes...</>
                         ) : (

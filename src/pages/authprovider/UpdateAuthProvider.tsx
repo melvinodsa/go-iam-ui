@@ -65,6 +65,11 @@ const UpdateAuthProvider = (props: UpdateAuthProviderProps) => {
             state.fetchAuthProviders(); // Fetch projects after creation
         }
     }, [state.updatedAuthProvider]);
+
+
+
+    const paramsValid = params.reduce<boolean>((acc, param) => acc && param.value && param.value.length > 0 ? true : false, true);
+    const disabled = state.updatingAuthProvider || !name || !paramsValid;
     return (
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
@@ -83,7 +88,7 @@ const UpdateAuthProvider = (props: UpdateAuthProviderProps) => {
                 <div className="grid gap-4">
                     <div className="grid gap-3">
                         <Label htmlFor="name-1">Name</Label>
-                        <Input id="name-1" name="name" placeholder="My superhero project" value={name} onChange={(e) => setName(e.target.value)} />
+                        <Input id="name-1" name="name" placeholder="Dashboard google auth" value={name} onChange={(e) => setName(e.target.value)} />
                     </div>
                     <Select value={provider} onValueChange={(value) => setProvider(value)}>
                         <SelectTrigger className="w-[180px]">
@@ -111,7 +116,7 @@ const UpdateAuthProvider = (props: UpdateAuthProviderProps) => {
                     <DialogClose asChild>
                         <Button variant="outline">Cancel</Button>
                     </DialogClose>
-                    <Button type="submit" onClick={handleSubmit} disabled={state.updatingAuthProvider}>
+                    <Button type="submit" onClick={handleSubmit} disabled={disabled}>
                         {state.updatingAuthProvider ? (
                             <><Loader2Icon className="animate-spin" /> Saving changes...</>
                         ) : (

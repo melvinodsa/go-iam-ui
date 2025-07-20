@@ -55,6 +55,9 @@ const UpdateResource = (props: UpdateResourceProps) => {
             state.fetchResources("", 1, 10); // Fetch resources after creation
         }
     }, [state.updatedResource]);
+
+    const isValid = name.trim() !== "" && key.trim() !== "";
+    const disabled = state.updatingResource || !isValid;
     return (
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
@@ -88,7 +91,7 @@ const UpdateResource = (props: UpdateResourceProps) => {
                     <DialogClose asChild>
                         <Button variant="outline">Cancel</Button>
                     </DialogClose>
-                    <Button type="submit" onClick={handleSubmit} disabled={state.updatingResource}>
+                    <Button type="submit" onClick={handleSubmit} disabled={disabled}>
                         {state.updatingResource ? (
                             <><Loader2Icon className="animate-spin" /> Saving changes...</>
                         ) : (

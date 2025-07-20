@@ -70,15 +70,29 @@ const AddClient = () => {
             state.resetCreatedClient(); // Reset the created client state
             state.fetchClients(); // Fetch clients after creation
             if (client.go_iam_client && !authState.clientAvailable) {
-                authState.fetchMe();
+                authState.logout();
+                authState.fetchMe(true);
             }
         }
     }, [state.createdClient, client.go_iam_client, authState.clientAvailable, authState.fetchMe]);
 
-
     const handleSubmit = useCallback(() => {
         state.createClient(client)
     }, [state.createClient, client]);
+
+    const handleGoIamClientChange = useCallback((value: boolean | 'indeterminate') => {
+        const isGoIamClient = value === true || value === 'indeterminate'
+        setGoIamClient(isGoIamClient);
+        if (!authState.clientAvailable && isGoIamClient) {
+            if (redirectUrls.trim() === "") {
+                setRedirectUrls(`${window.location.origin}/verify`);
+            } else if (!redirectUrls.includes(`${window.location.origin}/verify`)) {
+                setRedirectUrls(`${redirectUrls}, ${window.location.origin}/verify`);
+            }
+        }
+    }, []);
+
+    const disabled = state.creatingClient || !name || !description || !redirectUrls || !defaultAuthProviderId;
     return (
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
@@ -96,7 +110,7 @@ const AddClient = () => {
                 <div className="grid gap-4">
                     <div className="grid gap-3">
                         <Label htmlFor="name-1">Name</Label>
-                        <Input id="name-1" name="name" placeholder="My superhero project" value={name} onChange={(e) => setName(e.target.value)} />
+                        <Input id="name-1" name="name" placeholder="My cool project client" value={name} onChange={(e) => setName(e.target.value)} />
                     </div>
                     <div className="grid gap-3">
                         <Label htmlFor="description-1">Description</Label>
@@ -106,6 +120,10 @@ const AddClient = () => {
                         <Label htmlFor="tags-1">Tags</Label>
                         <Textarea id="tags-1" name="tags" placeholder="Comma separated tags" value={tags} onChange={(e) => setTags(e.target.value)} />
                     </div>
+                    {!authState.clientAvailable && <div className="flex items-center gap-3">
+                        <Checkbox id="terms" checked={goIamClient} disabled={authState.clientAvailable} onCheckedChange={handleGoIamClientChange} />
+                        <Label htmlFor="terms">Set as Go IAM Client</Label>
+                    </div>}
                     <div className="grid gap-3">
                         <Label htmlFor="redirect-urls-1">Redirected Urls</Label>
                         <Textarea id="redirect-urls-1" name="redirect-urls" placeholder="Comma separated redirected urls" value={redirectUrls} onChange={(e) => setRedirectUrls(e.target.value)} />
@@ -123,16 +141,16 @@ const AddClient = () => {
                             </SelectGroup>
                         </SelectContent>
                     </Select>
-                    <div className="flex items-center gap-3">
-                        <Checkbox id="terms" checked={goIamClient} disabled={authState.clientAvailable} onCheckedChange={value => setGoIamClient(value === true || value === 'indeterminate')} />
+                    {authState.clientAvailable && <div className="flex items-center gap-3">
+                        <Checkbox id="terms" checked={goIamClient} disabled={authState.clientAvailable} onCheckedChange={handleGoIamClientChange} />
                         <Label htmlFor="terms">Set as Go IAM Client</Label>
-                    </div>
+                    </div>}
                 </div>
                 <DialogFooter>
                     <DialogClose asChild>
                         <Button variant="outline">Cancel</Button>
                     </DialogClose>
-                    <Button type="submit" onClick={handleSubmit} disabled={state.creatingClient}>
+                    <Button type="submit" onClick={handleSubmit} disabled={disabled}>
                         {state.creatingClient ? (
                             <><Loader2Icon className="animate-spin" /> Saving changes...</>
                         ) : (
