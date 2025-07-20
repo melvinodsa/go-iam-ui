@@ -141,10 +141,6 @@ const AddClient = () => {
                             </SelectGroup>
                         </SelectContent>
                     </Select>
-                    {authState.clientAvailable && <div className="flex items-center gap-3">
-                        <Checkbox id="terms" checked={goIamClient} disabled={authState.clientAvailable} onCheckedChange={handleGoIamClientChange} />
-                        <Label htmlFor="terms">Set as Go IAM Client</Label>
-                    </div>}
                 </div>
                 <DialogFooter>
                     <DialogClose asChild>
