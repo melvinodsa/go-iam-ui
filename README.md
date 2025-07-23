@@ -31,13 +31,15 @@ This UI provides a clean, easy-to-use dashboard for managing authentication prov
 
 ## 🚀 Getting Started
 
-### Prerequisites
+### Option 1: 🔧 Manual Setup (Development)
+
+#### Prerequisites
 
 - Node.js (v18+)
 - PNPM
 - A running [go-iam](https://github.com/melvinodsa/go-iam) backend
 
-### Clone and Setup
+#### Clone and Setup
 
 ```bash
 git clone https://github.com/melvinodsa/go-iam-ui.git
@@ -46,8 +48,39 @@ pnpm install
 cp sample.env .env
 ```
 
-### Run the UI
+#### Run the UI
 
 ```bash
 pnpm dev
 ```
+
+### Option 2: 🐳 Docker-Based Local Setup (Recommended for Testing)
+
+Use the official go-iam-docker repo to spin up everything with Docker Compose, including:
+
+- MongoDB
+- Redis
+- go-iam (backend)
+- go-iam-ui (admin frontend)
+
+#### Steps
+
+```bash
+git clone https://github.com/melvinodsa/go-iam-docker.git
+cd go-iam-docker
+cp sample.env .env
+docker compose up -d
+```
+
+#### Access
+
+- Admin UI: [http://localhost:4173](http://localhost:4173)
+- API: [http://localhost:3000](http://localhost:3000)
+
+## 📦 Environment Variables
+
+Some important environment variables used in `.env`:
+
+| Variable          | Description                                          |
+| ----------------- | ---------------------------------------------------- |
+| `VITE_API_SERVER` | URL for go-iam backend - eg: `http://localhost:3000` |
