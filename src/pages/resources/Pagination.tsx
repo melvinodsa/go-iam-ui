@@ -24,6 +24,26 @@ interface PaginationProps {
 
 const Pagination = (props: PaginationProps) => {
     const state = useResourceState();
+    const pages = [];
+    if (state.currentPage - 2 != 1 && state.currentPage - 1 != 1 && state.currentPage != 1) {
+        pages.push(1)
+    }
+    if (state.currentPage - 2 >= 1) {
+        pages.push(state.currentPage - 2)
+    }
+    if (state.currentPage - 1 >= 1) {
+        pages.push(state.currentPage - 1)
+    }
+    pages.push(state.currentPage)
+    if (state.currentPage + 1 <= state.pages.length) {
+        pages.push(state.currentPage + 1)
+    }
+    if (state.currentPage + 2 <= state.pages.length) {
+        pages.push(state.currentPage + 2)
+    }
+    if (state.currentPage + 2 != state.pages.length && state.currentPage + 1 != state.pages.length && state.currentPage != state.pages.length) {
+        pages.push(state.pages.length)
+    }
 
     return (
         <div className="flex items-center justify-end space-x-2 py-4">
@@ -56,10 +76,10 @@ const Pagination = (props: PaginationProps) => {
                     <ChevronLeft className="h-4 w-4" />
                 </Button>
 
-                {state.pages.map((page) => (
+                {pages.map((page) => (
                     <Button
                         key={page}
-                        variant={page === state.currentPage ? "default" : "outline"}
+                        variant={page === state.currentPage ? "default" : (state.currentPage - 2 > page || state.currentPage + 2 < page) ? "secondary" : "outline"}
                         size="sm"
                         onClick={() => props.onPageChange(page)}
                     >
