@@ -51,7 +51,7 @@ const RolesListPage = () => {
     const onPageChange = useCallback((page: number) => {
         if (page < 1 || page > state.pages.length) return
         state.fetchRoles(debouncedSearch, page, pageSize)
-    }, [])
+    }, [state.pages.length])
 
     const onFilterChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
         const searchValue = event.target.value

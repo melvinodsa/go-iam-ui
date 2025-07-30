@@ -51,7 +51,7 @@ const ResourcesListPage = () => {
     const onPageChange = useCallback((page: number) => {
         if (page < 1 || page > state.pages.length) return
         state.fetchResources(debouncedSearch, page, pageSize)
-    }, [])
+    }, [state.pages.length])
 
     const onFilterChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
         const searchValue = event.target.value
