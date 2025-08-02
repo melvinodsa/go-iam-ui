@@ -21,9 +21,13 @@ import {
     SidebarMenu,
     SidebarMenuButton,
     SidebarMenuItem,
+    SidebarMenuSubButton,
+    SidebarMenuSubItem,
     useSidebar,
 } from "@/components/ui/sidebar"
 import { useAuthState } from "@/hooks/auth"
+import { Link } from "react-router-dom"
+import { API_SERVER } from "@/config/config"
 
 export function NavUser() {
     const { isMobile } = useSidebar()
@@ -31,6 +35,17 @@ export function NavUser() {
 
     return (
         <SidebarMenu>
+
+            <SidebarMenuItem>
+                <SidebarMenuSubItem key={"documentation"}>
+                    <SidebarMenuSubButton
+                        asChild >
+                        <Link to={`${API_SERVER}/docs`} target="_blank">
+                            Documentation
+                        </Link>
+                    </SidebarMenuSubButton>
+                </SidebarMenuSubItem>
+            </SidebarMenuItem>
             <SidebarMenuItem>
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
