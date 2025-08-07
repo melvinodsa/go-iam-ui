@@ -1,5 +1,5 @@
 import { API_SERVER } from "@/config/config"
-import { hookstate, type State, useHookstate } from "@hookstate/core"
+import { hookstate, type Immutable, type State, useHookstate } from "@hookstate/core"
 import { toast } from "sonner"
 import { useProjectState, type ProjectWrapState } from "../projects"
 import { useAuthState, type AuthWrapState } from "../auth"
@@ -16,6 +16,20 @@ export interface RoleItem {
     name: string
 }
 
+
+export interface PolicyItem {
+    name: string
+    mapping: PolicyMapping
+}
+
+export interface PolicyMapping {
+    arguments: { [key: string]: PolicyMappingValue }
+}
+
+export interface PolicyMappingValue {
+    static: string
+}
+
 export interface User {
     id: string
     name: string
@@ -23,9 +37,9 @@ export interface User {
     email: string
     phone: string
     expiry: string | null
-    resources: { [key: string]: ResourceItem }
-    roles: { [key: string]: RoleItem }
-    policies: { [key: string]: string }
+    resources: { [key: string]: ResourceItem | Immutable<ResourceItem> }
+    roles: { [key: string]: RoleItem | Immutable<RoleItem> }
+    policies: { [key: string]: PolicyItem | Immutable<PolicyItem> }
     enabled: boolean
     created_at: string
     created_by: string
@@ -232,6 +246,44 @@ const wrapState = (state: State<UserState>, project: ProjectWrapState, auth: Aut
             loading: "Updating user roles...",
             success: "User roles updated successfully",
             error: err => err.message || "Failed to update user roles",
+        });
+    },
+    updatePolicy: (id: string, policies: { to_be_added: { [key: string]: PolicyItem }, to_be_removed: string[] }) => {
+        if (state.updatingUser.value) {
+            console.debug("Already updating, ignoring new update request");
+            return;
+        }
+        state.updatingUser.set(true);
+        const url = `${API_SERVER}/user/v1/${id}/policies`;
+        //normal fetch
+        const loadingResolve = auth.fetch(url, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(policies),
+        })
+            .then((response) => {
+                if (!response.ok) {
+                    throw new Error("Network response was not ok");
+                }
+                return response.json();
+            })
+            .then((data: UserResponse) => {
+                if (!data.success) {
+                    throw new Error(data.message || "Failed to update user policies");
+                }
+                state.updatedUser.set(true);
+                state.updatingUser.set(false);
+            })
+            .catch((error) => {
+                state.updatingUser.set(false);
+                throw new Error(`Failed to update user policies: ${error.message}`);
+            });
+        toast.promise(loadingResolve, {
+            loading: "Updating user policies...",
+            success: "User policies updated successfully",
+            error: err => err.message || "Failed to update user policies",
         });
     },
     resetError: () => {

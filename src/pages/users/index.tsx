@@ -19,6 +19,7 @@ import AddUser from "./AddUser"
 import DisableUser from "./DisableUser"
 import UpdateUser from "./UpdateUser"
 import UpdateRole from "./UpdateRole"
+import UpdatePolicy from "./UpdatePolicy"
 
 const UsersListPage = () => {
     const navState = useNavState()
@@ -103,6 +104,7 @@ const UsersListPage = () => {
                                 <TableCell>
                                     <UpdateUser data={user} />
                                     <UpdateRole data={user} />
+                                    <UpdatePolicy data={user} />
                                     <DisableUser data={user} />
                                 </TableCell>
                             </TableRow>
