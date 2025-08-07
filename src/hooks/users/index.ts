@@ -3,7 +3,6 @@ import { hookstate, type Immutable, type State, useHookstate } from "@hookstate/
 import { toast } from "sonner"
 import { useProjectState, type ProjectWrapState } from "../projects"
 import { useAuthState, type AuthWrapState } from "../auth"
-import type { Policy } from "../policies"
 
 
 export interface ResourceItem {
@@ -19,7 +18,7 @@ export interface RoleItem {
 
 
 export interface PolicyItem {
-    def: Policy
+    name: string
     mapping: PolicyMapping
 }
 

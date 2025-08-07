@@ -59,13 +59,13 @@ const state = hookstate<PolicyState>({
 })
 
 const wrapState = (state: State<PolicyState>, auth: AuthWrapState) => ({
-    fetchPolicies: (page: number, limit: number) => {
+    fetchPolicies: (query: string, page: number, limit: number) => {
         if (state.loadingPolicies.value) {
             console.debug("Already loading, ignoring new fetch request");
             return;
         }
         state.loadingPolicies.set(true);
-        const url = `${API_SERVER}/policy/v1/?skip=${(page - 1) * limit}&limit=${limit}`;
+        const url = `${API_SERVER}/policy/v1/?query=${query}&skip=${(page - 1) * limit}&limit=${limit}`;
         //normal fetch
         const loadingResolve = auth.fetch(url, {
             method: "GET",

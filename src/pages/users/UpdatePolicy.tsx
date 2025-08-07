@@ -53,8 +53,8 @@ const UpdatePolicy = (props: UpdatePolicyProps) => {
     }, [policies, props.data.id, props.data.roles, state.updatePolicy]);
 
 
-    const searchPolicies = useCallback(() => {
-        policyState.fetchPolicies(1, 100);
+    const searchPolicies = useCallback((query: string) => {
+        policyState.fetchPolicies(query, 1, 100);
     }, [policyState.policies, policyState.fetchPolicies]);
 
     useEffect(() => {
@@ -68,7 +68,7 @@ const UpdatePolicy = (props: UpdatePolicyProps) => {
 
     useEffect(() => {
         if (policy?.definition.arguments.length === 0) {
-            setPolicies(prev => ({ ...prev, [policy.id]: { def: policy, mapping: { arguments: {} } } }))
+            setPolicies(prev => ({ ...prev, [policy.id]: { name: policy.name, mapping: { arguments: {} } } }))
         }
     }, [policy]);
     return (
@@ -89,7 +89,11 @@ const UpdatePolicy = (props: UpdatePolicyProps) => {
                 <div className="grid gap-4">
                     <SingleSearchSelector
                         onSelect={(selected: string) => {
-                            setPolicy(policyState.policyMap[selected] || null);
+                            if (policies[selected]) {
+                                setPolicy(null);
+                            } else {
+                                setPolicy(policyState.policyMap[selected] || null);
+                            }
                         }}
                         options={policyState.policies.map(res => ({
                             label: res.name,
@@ -100,11 +104,11 @@ const UpdatePolicy = (props: UpdatePolicyProps) => {
                     />
                 </div>
 
-                <PolicySetup policy={policy} setPolicy={setPolicy} policySetup={(item) => {
+                <PolicySetup policy={policy} setPolicy={setPolicy} policySetup={(id, item) => {
                     setPolicies(prev => ({
                         ...prev,
-                        [item.def.id]: {
-                            def: item.def,
+                        [id]: {
+                            name: item.name,
                             mapping: item.mapping
                         }
                     }));
@@ -116,7 +120,7 @@ const UpdatePolicy = (props: UpdatePolicyProps) => {
                         <h4 className="mb-4 text-sm leading-none font-medium">Policies</h4>
                         {Object.keys(policies).map((policy) => (
                             <React.Fragment key={policy}>
-                                <div className="text-sm">{policies[policy]?.def?.name}</div>
+                                <div className="text-sm">{policies[policy]?.name}</div>
                                 <Separator className="my-2" />
                             </React.Fragment>
                         ))}
@@ -143,7 +147,7 @@ const UpdatePolicy = (props: UpdatePolicyProps) => {
 interface PolicySetupProps {
     policy: ImmutableObject<Policy> | null
     setPolicy: (policy: ImmutableObject<Policy> | null) => void
-    policySetup: (policy: PolicyItem) => void
+    policySetup: (id: string, policy: PolicyItem) => void
 }
 
 const PolicySetup = (props: PolicySetupProps) => {
@@ -164,13 +168,15 @@ const PolicySetup = (props: PolicySetupProps) => {
                             <label htmlFor={`policy-arg-${arg.name}`} className="text-sm font-medium">{arg.description}</label>
                             <DataSelector
                                 onSelect={(selected) => {
-                                    setPolicyArgs(prev => ({ ...prev, [arg.name]: selected.value }));
-                                    if ((props.policy?.definition.arguments.length || 0) === Object.keys(policyArgs).length) {
-                                        props.policySetup({
-                                            def: JSON.parse(JSON.stringify(props.policy)),
+                                    const existingValue = policyArgs;
+                                    existingValue[arg.name] = selected.value;
+                                    setPolicyArgs({ ...existingValue });
+                                    if ((props.policy?.definition.arguments.length || 0) === Object.keys(existingValue).length) {
+                                        props.policySetup(props.policy?.id || "", {
+                                            name: props.policy?.name,
                                             mapping: {
-                                                arguments: Object.keys(policyArgs).reduce<{ [key: string]: PolicyMappingValue }>((acc, key) => {
-                                                    acc[key] = { static: policyArgs[key] };
+                                                arguments: Object.keys(existingValue).reduce<{ [key: string]: PolicyMappingValue }>((acc, key) => {
+                                                    acc[key] = { static: existingValue[key] };
                                                     return acc;
                                                 }, {})
                                             }
