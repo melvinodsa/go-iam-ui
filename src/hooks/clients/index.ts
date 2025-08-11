@@ -15,6 +15,8 @@ export interface Client {
     default_auth_provider_id: string
     go_iam_client: boolean
     enabled: boolean
+    linked_user_id?: string
+    linked_user_email?: string 
     created_at: string
     created_by: string
     updated_at: string

@@ -1,6 +1,3 @@
-
-
-
 import { CirclePlus, Loader2Icon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -32,6 +29,10 @@ import { useClientState } from "@/hooks/clients"
 import { useAuthProviderState } from "@/hooks/authproviders"
 import { Checkbox } from "@/components/ui/checkbox"
 import { useAuthState } from "@/hooks/auth"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Info } from "lucide-react"
+import {AuthProviderTypeGoIAMClient} from "@/hooks/authproviders"
+
 
 const AddClient = () => {
     const state = useClientState();
@@ -45,30 +46,45 @@ const AddClient = () => {
     const [redirectUrls, setRedirectUrls] = useState("");
     const [defaultAuthProviderId, setDefaultAuthProviderId] = useState("");
     const [goIamClient, setGoIamClient] = useState(false);
+    const [linkedUserEmail, setLinkedUserEmail] = useState("");
 
-    const client = useMemo(() => ({
-        id: "",
-        name: name,
-        description: description,
-        secret: "",
-        tags: tags.split(",").map(tag => tag.trim()), // Split tags by comma and trim whitespace
-        redirect_urls: redirectUrls.split(",").map(url => url.trim()), // Split redirect URLs by comma and trim whitespace
-        project_id: projectState.project?.id || "",
-        default_auth_provider_id: defaultAuthProviderId,
-        enabled: true,
-        go_iam_client: goIamClient,
-        created_at: new Date().toISOString(),
-        created_by: "system", // This should be replaced with the actual user ID
-        updated_at: new Date().toISOString(),
-        updated_by: "system", // This should be replaced with the actual user ID
-    }), [name, description, tags, redirectUrls, defaultAuthProviderId, projectState.project?.id, goIamClient]);
+    // Check if selected auth provider is GOIAM/CLIENT
+    const selectedProvider = authProviderState.authproviders.find(
+        p => p.id === defaultAuthProviderId
+    );
+    const isServiceAccountProvider = selectedProvider?.provider === AuthProviderTypeGoIAMClient;
+
+    const client = useMemo(() => {
+        const clientData: any = {
+            id: "",
+            name: name,
+            description: description,
+            secret: "",
+            tags: tags.split(",").map(tag => tag.trim()),
+            redirect_urls: redirectUrls.split(",").map(url => url.trim()),
+            project_id: projectState.project?.id || "",
+            default_auth_provider_id: defaultAuthProviderId,
+            enabled: true,
+            go_iam_client: goIamClient,
+            created_at: new Date().toISOString(),
+            created_by: "system",
+            updated_at: new Date().toISOString(),
+            updated_by: "system",
+        };
+        
+        // Add linked_user_email for service account clients
+        if (isServiceAccountProvider && linkedUserEmail) {
+            clientData.linked_user_email = linkedUserEmail;
+        }
+        
+        return clientData;
+    }, [name, description, tags, redirectUrls, defaultAuthProviderId, projectState.project?.id, goIamClient, isServiceAccountProvider, linkedUserEmail]);
 
     useEffect(() => {
         if (state.createdClient) {
-            // Close the dialog or reset the form
             setDialogOpen(false);
-            state.resetCreatedClient(); // Reset the created client state
-            state.fetchClients(); // Fetch clients after creation
+            state.resetCreatedClient();
+            state.fetchClients();
             if (client.go_iam_client && !authState.clientAvailable) {
                 authState.logout();
                 authState.fetchMe(true);
@@ -90,9 +106,17 @@ const AddClient = () => {
                 setRedirectUrls(`${redirectUrls}, ${window.location.origin}/verify`);
             }
         }
-    }, []);
+    }, [authState.clientAvailable, redirectUrls]);
 
-    const disabled = state.creatingClient || !name || !description || !redirectUrls || !defaultAuthProviderId;
+    useEffect(() => {
+        if (!isServiceAccountProvider) {
+            setLinkedUserEmail("");
+        }
+    }, [isServiceAccountProvider]);
+
+    const disabled = state.creatingClient || !name || !description || !redirectUrls || !defaultAuthProviderId || 
+                    (isServiceAccountProvider && !linkedUserEmail);
+                    
     return (
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
@@ -100,14 +124,14 @@ const AddClient = () => {
                     <CirclePlus className="mr-2 h-4 w-4" />Add
                 </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px]">
+            <DialogContent className="sm:max-w-[525px]">
                 <DialogHeader>
                     <DialogTitle>Add Client</DialogTitle>
                     <DialogDescription>
                         Add a client in the system
                     </DialogDescription>
                 </DialogHeader>
-                <div className="grid gap-4">
+                <div className="grid gap-4 max-h-[60vh] overflow-y-auto pr-2">
                     <div className="grid gap-3">
                         <Label htmlFor="name-1">Name</Label>
                         <Input id="name-1" name="name" placeholder="My cool project client" value={name} onChange={(e) => setName(e.target.value)} />
@@ -120,27 +144,61 @@ const AddClient = () => {
                         <Label htmlFor="tags-1">Tags</Label>
                         <Textarea id="tags-1" name="tags" placeholder="Comma separated tags" value={tags} onChange={(e) => setTags(e.target.value)} />
                     </div>
-                    {!authState.clientAvailable && <div className="flex items-center gap-3">
-                        <Checkbox id="terms" checked={goIamClient} disabled={authState.clientAvailable} onCheckedChange={handleGoIamClientChange} />
-                        <Label htmlFor="terms">Set as Go IAM Client</Label>
-                    </div>}
                     <div className="grid gap-3">
-                        <Label htmlFor="redirect-urls-1">Redirected Urls</Label>
-                        <Textarea id="redirect-urls-1" name="redirect-urls" placeholder="Comma separated redirected urls" value={redirectUrls} onChange={(e) => setRedirectUrls(e.target.value)} />
+                        <Label>Auth Provider</Label>
+                        <Select value={defaultAuthProviderId} onValueChange={(value) => setDefaultAuthProviderId(value)}>
+                            <SelectTrigger>
+                                <SelectValue placeholder="Select provider" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectGroup>
+                                    <SelectLabel>Auth Providers</SelectLabel>
+                                    {authProviderState.authproviders.map((provider) => (
+                                        <SelectItem key={provider.id} value={provider.id}>
+                                            {provider.name} {provider.provider === AuthProviderTypeGoIAMClient && "(Service Account)"}
+                                        </SelectItem>
+                                    ))}
+                                </SelectGroup>
+                            </SelectContent>
+                        </Select>
                     </div>
-                    <Select value={defaultAuthProviderId} onValueChange={(value) => setDefaultAuthProviderId(value)}>
-                        <SelectTrigger className="w-[180px]">
-                            <SelectValue placeholder="Select provider" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectGroup>
-                                <SelectLabel>Auth Providers</SelectLabel>
-                                {authProviderState.authproviders.map((provider) => (
-                                    <SelectItem key={provider.id} value={provider.id}>{provider.name}</SelectItem>
-                                ))}
-                            </SelectGroup>
-                        </SelectContent>
-                    </Select>
+                    
+                    {isServiceAccountProvider && (
+                        <>
+                            <Alert>
+                                <Info className="h-4 w-4" />
+                                <AlertDescription>
+                                    Service account clients require a linked user. The client will inherit the permissions of this user.
+                                </AlertDescription>
+                            </Alert>
+                            <div className="grid gap-3">
+                                <Label htmlFor="linked-user-email">Linked User Email *</Label>
+                                <Input 
+                                    id="linked-user-email" 
+                                    name="linked-user-email" 
+                                    type="email"
+                                    placeholder="user@example.com" 
+                                    value={linkedUserEmail} 
+                                    onChange={(e) => setLinkedUserEmail(e.target.value)} 
+                                />
+                                <p className="text-sm text-muted-foreground">
+                                    Enter the email of an existing user in your project
+                                </p>
+                            </div>
+                        </>
+                    )}
+                    
+                    {!authState.clientAvailable && !isServiceAccountProvider && (
+                        <div className="flex items-center gap-3">
+                            <Checkbox id="terms" checked={goIamClient} disabled={authState.clientAvailable} onCheckedChange={handleGoIamClientChange} />
+                            <Label htmlFor="terms">Set as Go IAM Client</Label>
+                        </div>
+                    )}
+                    
+                    <div className="grid gap-3">
+                        <Label htmlFor="redirect-urls-1">Redirect URLs</Label>
+                        <Textarea id="redirect-urls-1" name="redirect-urls" placeholder="Comma separated redirect urls" value={redirectUrls} onChange={(e) => setRedirectUrls(e.target.value)} />
+                    </div>
                 </div>
                 <DialogFooter>
                     <DialogClose asChild>
