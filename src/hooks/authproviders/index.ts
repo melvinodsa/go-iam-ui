@@ -12,6 +12,8 @@ export interface Params {
     is_secret: boolean
 }
 
+export const AuthProviderTypeGoIAMClient = "GOIAM/CLIENT";
+
 export interface AuthProvider {
     id: string
     name: string
@@ -38,14 +40,22 @@ interface AuthProviderResponse {
     data: AuthProvider
 }
 
+interface EnableServiceAccountResponse {
+    success: boolean
+    message: string
+    data: any
+}
+
 interface AuthProvidersState {
     authproviders: AuthProvider[]
     loadingAuthProviders: boolean
     updatingAuthProvider: boolean
     creatingAuthProvider: boolean
+    enablingServiceAccount: boolean
     err: string
     createdAuthProvider: boolean
     updatedAuthProvider: boolean
+    enabledServiceAccount: boolean
 }
 
 const state = hookstate<AuthProvidersState>({
@@ -53,8 +63,10 @@ const state = hookstate<AuthProvidersState>({
     loadingAuthProviders: false,
     updatingAuthProvider: false,
     creatingAuthProvider: false,
+    enablingServiceAccount: false,
     createdAuthProvider: false,
     updatedAuthProvider: false,
+    enabledServiceAccount: false,
     err: "",
 })
 
@@ -88,9 +100,9 @@ const wrapState = (state: State<AuthProvidersState>, project: ProjectWrapState, 
                 throw new Error(`Failed to fetch auth providers: ${error.message}`);
             });
         toast.promise(loadingResolve, {
-            loading: "Loading projects...",
-            success: "Projects loaded successfully",
-            error: err => err.message || "Failed to load projects",
+            loading: "Loading auth providers...",
+            success: "Auth providers loaded successfully",
+            error: err => err.message || "Failed to load auth providers",
         });
     },
     createAuthProvider: (authProvider: AuthProvider) => {
@@ -171,6 +183,47 @@ const wrapState = (state: State<AuthProvidersState>, project: ProjectWrapState, 
             error: err => err.message || "Failed to update auth provider",
         });
     },
+    enableServiceAccount: () => {
+        if (state.enablingServiceAccount.value) {
+            console.debug("Already enabling service account, ignoring new request");
+            return;
+        }
+        state.enablingServiceAccount.set(true);
+        const url = `${API_SERVER}/authprovider/v1/enable-service-account`;
+        //normal fetch
+        const loadingResolve = auth.fetch(url, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-Project-Ids": project.project?.id || "",
+            },
+            body: JSON.stringify({
+                project_id: project.project?.id || ""
+            }),
+        })
+            .then((response) => {
+                if (!response.ok) {
+                    throw new Error("Network response was not ok");
+                }
+                return response.json();
+            })
+            .then((data: EnableServiceAccountResponse) => {
+                if (!data.success) {
+                    throw new Error(data.message || "Failed to enable service account");
+                }
+                state.enabledServiceAccount.set(true);
+                state.enablingServiceAccount.set(false);
+            })
+            .catch((error) => {
+                state.enablingServiceAccount.set(false);
+                throw new Error(`Failed to enable service account: ${error.message}`);
+            });
+        toast.promise(loadingResolve, {
+            loading: "Enabling service account...",
+            success: "Service account enabled successfully",
+            error: err => err.message || "Failed to enable service account",
+        });
+    },
     resetError: () => {
         state.err.set("");
     },
@@ -180,17 +233,23 @@ const wrapState = (state: State<AuthProvidersState>, project: ProjectWrapState, 
     resetUpdatedAuthProvider: () => {
         state.updatedAuthProvider.set(false);
     },
+    resetEnabledServiceAccount: () => {
+        state.enabledServiceAccount.set(false);
+    },
     updatedAuthProvider: state.updatedAuthProvider.value,
     createdAuthProvider: state.createdAuthProvider.value,
+    enabledServiceAccount: state.enabledServiceAccount.value,
     loadingAuthProviders: state.loadingAuthProviders.value,
     updatingAuthProvider: state.updatingAuthProvider.value,
     creatingAuthProvider: state.creatingAuthProvider.value,
+    enablingServiceAccount: state.enablingServiceAccount.value,
     err: state.err.value,
     authproviders: state.authproviders.value,
     authprovidersMap: state.authproviders.value.reduce<{ [key: string]: ImmutableObject<AuthProvider> }>((acc, authProvider) => {
         acc[authProvider.id] = authProvider;
         return acc;
     }, {}),
+    hasServiceAccount: state.authproviders.value.some(provider => provider.provider === AuthProviderTypeGoIAMClient),
 })
 
 
