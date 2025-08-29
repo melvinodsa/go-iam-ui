@@ -24,7 +24,7 @@ export default function VerifyPage() {
         }
     }, [state.verified])
     useEffect(() => {
-        state.verify(params.get("code") || "")
+        state.verify(params.get("code_challenge") || "", params.get("code") || "")
     }, [])
     return (
         <div className="bg-muted flex min-h-svh flex-col items-center justify-center gap-6 p-6 md:p-10">
