@@ -1,5 +1,5 @@
 import { API_SERVER } from "@/config/config"
-import { hookstate, type State, useHookstate } from "@hookstate/core"
+import { useGoIam, type User } from "@goiam/react"
 import { toast } from "sonner"
 
 export interface Setup {
@@ -8,71 +8,13 @@ export interface Setup {
 }
 
 
-export interface User {
-    name: string
-    email: string
-    id: string
-    profile_pic: string
-    created_at: string
-    updated_at: string
-    created_by: string
-    updated_by: string
-    enabled: boolean
-    expiry: string
-    resources: { [key: string]: { id: string, key: string, name: string } }
-    roles: { [key: string]: { id: string, name: string } }
-}
 
-interface SetupMeResponse {
-    success: boolean
-    message: string
-    data: {
-        setup: Setup
-        user: User
-    }
-}
-
-
-interface VerifyResponse {
-    success: boolean
-    message: string
-    data: {
-        access_token: string
-    }
-}
-
-interface AuthState {
-    clientAvailable: boolean
-    user?: User
-    loadingAuth: boolean
-    verifying: boolean
-    client_id: string
-    token?: string
-    err: string
-    redirect: boolean
-    loadedState: boolean
-    verified: boolean // This is used to check if the user has verified their account
-    localStoreUpdatedAt: string // This is used to check if the local storage has been updated
-}
-
-const state = hookstate<AuthState>({
-    clientAvailable: false,
-    verifying: false,
-    client_id: localStorage.getItem("client_id") || "",
-    token: localStorage.getItem("access_token") || "",
-    user: localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user") || "null") : null,
-    loadingAuth: false,
-    err: "",
-    redirect: false,
-    loadedState: false,
-    verified: false, // This is used to check if the user has verified their account
-    localStoreUpdatedAt: localStorage.getItem("localStoreUpdatedAt") || "", // This is used to check if the local storage has been updated
-})
 
 export interface AuthWrapState {
     fetchMe: (dontUpdateTime?: boolean) => void
-    verify: (code: string) => void
+    verify: (codeChallenge: string, code: string) => void
     fetch: (url: string, init?: RequestInit) => Promise<Response>
+    login: () => void
     logout: () => void
     err: string
     loadedState: boolean
@@ -84,157 +26,39 @@ export interface AuthWrapState {
     verified: boolean // This is used to check if the user has verified their account
 }
 
-const wrapState = (state: State<AuthState>): AuthWrapState => ({
+const wrapState = (state: ReturnType<typeof useGoIam>): AuthWrapState => ({
     fetchMe: (dontUpdateTime?: boolean) => {
-        const lastUpdatedAt = new Date(state.localStoreUpdatedAt.value);
-        const now = new Date();
-        console.debug("Last updated at:", lastUpdatedAt, "Now:", now);
-        if (!dontUpdateTime && now.getTime() - lastUpdatedAt.getTime() < 5 * 60 * 1000) {
-            state.clientAvailable.set(state.client_id.value ? true : false);
-            state.loadedState.set(true)
-            console.debug("Skipping fetchMe as local store was updated recently");
-            return;
-        }
-        if (state.loadingAuth.value) {
-            console.debug("Already loading, ignoring new me request");
-            return;
-        }
-        state.loadingAuth.set(true);
-        const url = `${API_SERVER}/me/v1/dashboard`;
-
-        const headers: HeadersInit = {
-            "Content-Type": "application/json",
-        };
-        if (state.token.value && state.token.value.length > 0) {
-            headers["Authorization"] = `Bearer ${state.token.value}`;
-        }
-
-        //normal fetch
-        const loadingResolve = fetch(url, {
-            headers,
-        })
-            .then((response) => {
-                if (!response.ok && response.status !== 401) {
-                    throw new Error("Network response was not ok");
-                }
-
-                if (response.status === 401 && window.location.pathname !== "/login") {
-                    window.location.href = "/login";
-                }
-                return response.json();
-            })
-            .then((data: SetupMeResponse) => {
-                // local caching variables
-                if (!dontUpdateTime) {
-                    const date = new Date().toISOString()
-                    state.localStoreUpdatedAt.set(date);
-                    localStorage.setItem("localStoreUpdatedAt", date);
-                }
-                state.client_id.set(data.data?.setup.client_id);
-                localStorage.setItem("client_id", data.data?.setup.client_id || "");
-                state.user.set(data.data?.user);
-                localStorage.setItem("user", JSON.stringify(data.data?.user || null));
-                console.debug("Fetched user:", data.data?.user);
-
-                state.clientAvailable.set(data.data?.setup.client_id ? true : false);
-                state.loadedState.set(true)
-
-                state.loadingAuth.set(false);
-            })
-            .catch((error) => {
-                state.clientAvailable.set(false);
-                state.loadingAuth.set(false);
-                throw new Error(`Failed to fetch auth info: ${error.message}`);
-            });
-        toast.promise(loadingResolve, {
+        const result = state.dashboardMe(dontUpdateTime)
+        toast.promise(result, {
             loading: "Loading auth info...",
             success: "Auth info loaded successfully",
             error: err => err.message || "Failed to load auth info",
         });
     },
-    verify: (code: string) => {
-        if (state.verifying.value) {
-            console.debug("Already loading, ignoring new verify request");
-            return;
-        }
-        state.verifying.set(true);
-        const url = `${API_SERVER}/auth/v1/verify?code=${encodeURIComponent(code)}`;
-        //normal fetch
-        const loadingResolve = fetch(url, {
-            headers: {
-                "Content-Type": "application/json",
-            },
-        })
-            .then((response) => {
-                return response.json();
-            })
-            .then((data: VerifyResponse) => {
-                if (!data.success) {
-                    throw new Error(data.message || "Failed to verify the code");
-                }
-                state.token.set(data.data.access_token);
-                localStorage.setItem("access_token", data.data.access_token);
-                state.verified.set(true)
-                state.verifying.set(false);
-            })
-            .catch((error) => {
-                state.verifying.set(false);
-                throw new Error(`Failed to verify the code: ${error.message}`);
-            });
-        toast.promise(loadingResolve, {
-            loading: "Verifying auth...",
-            success: "Auth info verified successfully",
-            error: err => err.message || "Failed to verify auth info",
+    verify: (codeChallenge: string, code: string) => {
+        const result = state.verify(codeChallenge, code)
+        toast.promise(result, {
+            loading: "Verifying...",
+            success: "Verified successfully",
+            error: err => err.message || "Failed to verify",
         });
     },
-    fetch: (url: string, init?: RequestInit) => {
-        if (state.token.value && state.token.value.length > 0) {
-            if (!init) {
-                init = {};
-            }
-            const headers: Record<string, string> = (init.headers as Record<string, string>) || {};
-            headers["Authorization"] = `Bearer ${state.token.value}`;
-            init.headers = headers;
-        }
-        return fetch(url, {
-            ...init,
-        }).then((response) => {
-            if (response.status === 401) {
-                localStorage.setItem("loadedState", "false");
-                window.location.href = "/login";
-            }
-            return response;
-        });
-    },
-    logout: () => {
-        // locally cached variables
-        const now = new Date();
-        const updated = now.setMinutes(now.getMinutes() - 5);
-        state.localStoreUpdatedAt.set(new Date(updated).toISOString());
-        localStorage.setItem("localStoreUpdatedAt", new Date(updated).toISOString());
-        state.client_id.set("");
-        localStorage.removeItem("client_id");
-        state.token.set("");
-        localStorage.removeItem("access_token");
-        localStorage.removeItem("user");
-        state.user.set(undefined);
-
-        // reset normal state
-        state.clientAvailable.set(false);
-        state.user.set(undefined);
-        state.loadedState.set(false);
-        state.verified.set(false);
-        window.location.href = "/login";
-    },
-    err: state.err.value,
-    loadedState: state.loadedState.value,
-    clientAvailable: state.clientAvailable.value,
-    clientId: state.client_id.value,
-    loadingAuth: state.loadingAuth.value,
-    verifying: state.verifying.value,
-    user: state.user.value,
-    verified: state.verified.value,
+    login: state.login,
+    fetch: state.fetch,
+    logout: state.logout,
+    err: state.err,
+    loadedState: state.loadedState,
+    clientAvailable: state.clientAvailable,
+    clientId: state.clientId,
+    loadingAuth: state.loadingMe,
+    verifying: state.verifying,
+    user: state.user,
+    verified: state.verified,
 })
 
 
-export const useAuthState = () => wrapState(useHookstate(state))
+export const useAuthState = () => {
+    const state = useGoIam()
+    state.setBaseUrl(API_SERVER)
+    return wrapState(state)
+}

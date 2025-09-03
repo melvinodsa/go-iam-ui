@@ -8,6 +8,9 @@ dependencies:
   '@formkit/tempo':
     specifier: ^0.1.2
     version: 0.1.2
+  '@goiam/react':
+    specifier: ^0.4.0
+    version: 0.4.0(react-dom@19.1.0)(react@19.1.0)
   '@hookstate/core':
     specifier: ^4.0.2
     version: 4.0.2(react@19.1.0)
@@ -445,6 +448,17 @@ packages:
 
   /@formkit/tempo@0.1.2:
     resolution: {integrity: sha512-jNPPbjL8oj7hK3eHX++CwbR6X4GKQt+x00/q4yeXkwynXHGKL27dylYhpEgwrmediPP4y7s0XtN1if/M/JYujg==}
+    dev: false
+
+  /@goiam/react@0.4.0(react-dom@19.1.0)(react@19.1.0):
+    resolution: {integrity: sha512-i1/Kwju20nkvqoxjRzbLmbWlZdcRazn1jvewxP8msfExlqLJMfNKnYAJMu0QdDDTIOGDCPs0KczJcARZHHks+w==}
+    peerDependencies:
+      react: ^19.1.0
+      react-dom: ^19.1.0
+    dependencies:
+      '@hookstate/core': 4.0.2(react@19.1.0)
+      react: 19.1.0
+      react-dom: 19.1.0(react@19.1.0)
     dev: false
 
   /@hookstate/core@4.0.2(react@19.1.0):

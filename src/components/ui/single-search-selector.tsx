@@ -1,173 +1,113 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Check, ChevronsUpDown, X, Search } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogTrigger,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button"
+import React, { useState, useEffect, useCallback } from "react"
+import { Search } from "lucide-react"
 
-interface SingleSearchSelectorProps {
-  options: Array<{ value: string; label: string }>;
-  value?: string;
-  onSelect: (value: string) => void;  // Changed from onChange to onSelect
-  loadOptions?: (search: string) => void;  // Added for dynamic loading
-  title?: string;  // Added title prop (used as placeholder)
-  placeholder?: string;
-  searchPlaceholder?: string;
-  emptyMessage?: string;
-  disabled?: boolean;
-  className?: string;
+interface Option {
+  label: string
+  value: string
 }
 
-const SingleSearchSelector: React.FC<SingleSearchSelectorProps> = ({
+interface SingleSearchSelectorSelectorProps {
+  onSelect: (selected: string) => void
+  loadOptions: (search: string) => void
+  options: Option[]
+  title?: string
+}
+
+function SingleSearchSelector({
+  onSelect,
+  loadOptions,
   options = [],
-  value,
-  onSelect,  // Changed from onChange
-  loadOptions,  // Added
-  title,  // Added - will be used as placeholder
-  placeholder,
-  searchPlaceholder = "Search...",
-  emptyMessage = "No results found.",
-  disabled = false,
-  className,
-}) => {
-  const [open, setOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const containerRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
+  title = "Select Item",
+}: SingleSearchSelectorSelectorProps) {
+  const [open, setOpen] = useState(false)
+  const [search, setSearch] = useState("")
+  const [loading, setLoading] = useState(false)
 
-  const selectedOption = options.find(option => option.value === value);
-  
-  // Use title as placeholder if provided
-  const displayPlaceholder = title || placeholder || "Select an option...";
-
-  const filteredOptions = options.filter(option =>
-    option.label.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const fetchOptions = useCallback(
+    (query: string) => {
+      setLoading(true)
+      loadOptions(query)
+    },
+    [loadOptions]
+  )
 
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
-        setOpen(false);
-      }
-    };
-
-    if (open) {
-      document.addEventListener('mousedown', handleClickOutside);
-      // Focus the search input when dropdown opens
-      setTimeout(() => inputRef.current?.focus(), 0);
+    if (options) {
+      setLoading(false)
     }
+  }, [options])
 
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [open]);
-
-  // Call loadOptions when search query changes (if provided)
   useEffect(() => {
-    if (loadOptions && searchQuery) {
-      const timeoutId = setTimeout(() => {
-        loadOptions(searchQuery);
-      }, 300); // Debounce search
-      
-      return () => clearTimeout(timeoutId);
-    }
-  }, [searchQuery, loadOptions]);
+    const delayDebounce = setTimeout(() => {
+      fetchOptions(search)
+    }, 300)
 
-  const handleSelect = (selectedValue: string) => {
-    onSelect(selectedValue);  // Always call onSelect with the value
-    setOpen(false);
-    setSearchQuery('');
-  };
+    return () => clearTimeout(delayDebounce)
+  }, [search])
 
-  const handleClear = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    onSelect('');  // Pass empty string to clear
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
-    if (e.key === 'Escape') {
-      setOpen(false);
-    }
-  };
+  const toggleSelect = (value: string) => {
+    onSelect(value)
+    setOpen(false)
+  }
 
   return (
-    <div className={cn("relative w-full", className)} ref={containerRef}>
-      <Button
-        type="button"
-        variant="outline"
-        role="combobox"
-        aria-expanded={open}
-        disabled={disabled}
-        onClick={() => setOpen(!open)}
-        className={cn(
-          "w-full justify-between",
-          !value && "text-muted-foreground"
-        )}
-      >
-        <span className="truncate">
-          {selectedOption ? selectedOption.label : displayPlaceholder}
-        </span>
-        <div className="flex items-center gap-1">
-          {value && !disabled && (
-            <X
-              className="h-4 w-4 opacity-50 hover:opacity-100 transition-opacity"
-              onClick={handleClear}
-            />
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button variant="outline" className="w-full justify-between">
+          <Search className="ml-2 h-4 w-4" />
+        </Button>
+      </DialogTrigger>
+
+      <DialogContent className="max-w-lg">
+        <DialogHeader>
+          <DialogTitle>{title}</DialogTitle>
+        </DialogHeader>
+
+        <Input
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Search..."
+          className="mt-2"
+        />
+
+        <div className="mt-3 max-h-64 overflow-y-auto space-y-2 pr-1">
+          {loading && <div className="text-sm text-muted-foreground px-2">Loading...</div>}
+
+          {!loading && options.length === 0 && (
+            <div className="text-sm text-muted-foreground px-2">No results</div>
           )}
-          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-        </div>
-      </Button>
 
-      {open && (
-        <div 
-          className="absolute z-50 mt-1 w-full rounded-md border bg-popover shadow-md"
-          onKeyDown={handleKeyDown}
-        >
-          {/* Search Input */}
-          <div className="flex items-center border-b px-3">
-            <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
-            <input
-              ref={inputRef}
-              type="text"
-              className="flex h-10 w-full bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
-              placeholder={searchPlaceholder}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </div>
-
-          {/* Options List */}
-          <div className="max-h-64 overflow-auto py-1">
-            {filteredOptions.length === 0 ? (
-              <div className="px-3 py-6 text-center text-sm text-muted-foreground">
-                {emptyMessage}
+          {!loading &&
+            options.map((opt) => (
+              <div
+                key={opt.value}
+                className="flex items-center space-x-2 px-2 py-1 hover:bg-muted rounded cursor-pointer"
+                onClick={() => toggleSelect(opt.value)}
+              >
+                <span>{opt.label}</span>
               </div>
-            ) : (
-              filteredOptions.map((option) => (
-                <div
-                  key={option.value}
-                  className={cn(
-                    "relative flex cursor-pointer select-none items-center px-3 py-2 text-sm outline-none transition-colors",
-                    "hover:bg-accent hover:text-accent-foreground",
-                    value === option.value && "bg-accent text-accent-foreground"
-                  )}
-                  onClick={() => handleSelect(option.value)}
-                  role="option"
-                  aria-selected={value === option.value}
-                >
-                  <Check
-                    className={cn(
-                      "mr-2 h-4 w-4",
-                      value === option.value ? "opacity-100" : "opacity-0"
-                    )}
-                  />
-                  <span className="truncate">{option.label}</span>
-                </div>
-              ))
-            )}
-          </div>
+            ))}
         </div>
-      )}
-    </div>
-  );
-};
 
-export default SingleSearchSelector;
+        <DialogFooter className="mt-4">
+          <Button type="button" onClick={() => setOpen(false)}>
+            Done
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+
+export default React.memo(SingleSearchSelector);
