@@ -94,12 +94,24 @@ const AddAuthProvider = () => {
                             <SelectGroup>
                                 <SelectLabel>Providers</SelectLabel>
                                 <SelectItem value="GOOGLE">Google</SelectItem>
+                                <SelectItem value="MICROSOFT">Microsoft</SelectItem>
                             </SelectGroup>
                         </SelectContent>
                     </Select>
                     {
                         provider === "GOOGLE" && (
                             <GoogleParams
+                                params={params}
+                                onChange={(newParams) => {
+                                    setParams(newParams);
+                                }}
+                            />
+                        )
+                    }
+
+                    {
+                        provider === "MICROSOFT" && (
+                            <MicrosoftParams
                                 params={params}
                                 onChange={(newParams) => {
                                     setParams(newParams);
@@ -141,6 +153,39 @@ interface ParamUpdateProps {
 
 const GoogleParams = (props: ParamUpdateProps) => {
     const [params, setParams] = useState<Params[]>(GoogleParamsList);
+
+    const handleChange = (key: string, value: string) => {
+        const newParams = params.map((param) =>
+            param.key === key ? { ...param, value } : param
+        )
+        setParams(newParams);
+        props.onChange(newParams);
+    };
+
+    return (
+        <div>
+            {params.map((param) => (
+                <div key={param.key} className="flex items-center gap-2 mb-2">
+                    <Input
+                        placeholder={param.label}
+                        value={param.value}
+                        onChange={(e) => handleChange(param.key, e.target.value)}
+                    />
+                </div>
+            ))}
+        </div>
+    );
+}
+
+const MicrosoftParamsList = [
+    { label: "Client ID", value: "", key: "@MICROSOFT/CLIENT_ID", is_secret: false },
+    { label: "Client Secret", value: "", key: "@MICROSOFT/CLIENT_SECRET", is_secret: true },
+    { label: "Redirect URL", value: "", key: "@MICROSOFT/REDIRECT_URL", is_secret: false },
+]
+
+
+const MicrosoftParams = (props: ParamUpdateProps) => {
+    const [params, setParams] = useState<Params[]>(MicrosoftParamsList);
 
     const handleChange = (key: string, value: string) => {
         const newParams = params.map((param) =>
