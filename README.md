@@ -15,7 +15,7 @@ This UI provides a clean, easy-to-use dashboard for managing authentication prov
 ## 🌐 Features
 
 - 🔀 **Multi-Tenant Management**: Easily switch between and manage multiple projects.
-- 🔐 **Auth Provider Configuration**: Integrate and manage providers like Google.
+- 🔐 **Auth Provider Configuration**: Integrate and manage providers like Google, Microsoft, GitHub etc.
 - 🧩 **Client Management**: Manage applications (clients) connected to your IAM instance.
 - 👤 **User Management**: View and assign roles to users.
 - 🧱 **RBAC**: Create roles, assign resources, and manage permissions visually.
