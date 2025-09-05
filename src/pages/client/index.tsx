@@ -19,14 +19,14 @@ import { useClientState } from "@/hooks/clients"
 import { useAuthProviderState } from "@/hooks/authproviders"
 import { Button } from "@/components/ui/button"
 import { Check, Copy } from "lucide-react"
-import {AuthProviderTypeGoIAMClient} from "@/hooks/authproviders"
+import { AuthProviderTypeGoIAMClient } from "@/hooks/authproviders"
 
 const ClientsListPage = () => {
     const navState = useNavState()
     const state = useClientState();
     const authProvidersState = useAuthProviderState();
     const [copiedId, setCopiedId] = useState(false)
-    const [copied, setCopied] = useState(false)
+    const [copiedItem, setCopiedItem] = useState("")
 
     useEffect(() => {
         authProvidersState.fetchAuthProviders()
@@ -42,17 +42,8 @@ const ClientsListPage = () => {
         try {
             await navigator.clipboard.writeText(textToCopy)
             setCopiedId(true)
+            setCopiedItem(textToCopy)
             setTimeout(() => setCopiedId(false), 1500)
-        } catch (err) {
-            console.error("Failed to copy:", err)
-        }
-    }
-
-    const handleCopy = async (textToCopy: string) => {
-        try {
-            await navigator.clipboard.writeText(textToCopy)
-            setCopied(true)
-            setTimeout(() => setCopied(false), 1500)
         } catch (err) {
             console.error("Failed to copy:", err)
         }
@@ -89,26 +80,17 @@ const ClientsListPage = () => {
                                 </Tooltip></TableCell>
                                 <TableCell>
                                     <Button variant="outline" size="sm" onClick={() => handleCopyId(client.id)}>
-                                        {copiedId ? (
+                                        {copiedId && client.id === copiedItem ? (
                                             <Check className="h-4 w-4 mr-2 text-green-500" />
                                         ) : (
                                             <Copy className="h-4 w-4 mr-2" />
                                         )}
-                                        {copiedId ? "Copied!" : "Copy"}
+                                        {copiedId && client.id === copiedItem && "Copied!"}
+                                        {!(copiedId && client.id === copiedItem) && <span>Copy   </span>}
                                     </Button>
                                 </TableCell>
                                 <TableCell>
-                                    <Button variant="outline" size="sm" onClick={() => handleCopy(client.secret)}>
-                                        {copied ? (
-                                            <Check className="h-4 w-4 mr-2 text-green-500" />
-                                        ) : (
-                                            <Copy className="h-4 w-4 mr-2" />
-                                        )}
-                                        {copied ? "Copied!" : "Copy"}
-                                    </Button>
-                                </TableCell>
-                                <TableCell>
-                                    <Badge>{authProvidersState.authprovidersMap[client.default_auth_provider_id]?.name || "Unknown"}</Badge>
+                                    <Badge>{authProvidersState.authprovidersMap[client.default_auth_provider_id]?.name || "Service Account"}</Badge>
                                 </TableCell>
                                 <TableCell>{format(new Date(client.updated_at || client.created_at))}</TableCell>
                                 <TableCell>

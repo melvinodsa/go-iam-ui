@@ -40,12 +40,6 @@ interface AuthProviderResponse {
     data: AuthProvider
 }
 
-interface EnableServiceAccountResponse {
-    success: boolean
-    message: string
-    data: any
-}
-
 interface AuthProvidersState {
     authproviders: AuthProvider[]
     loadingAuthProviders: boolean
@@ -181,47 +175,6 @@ const wrapState = (state: State<AuthProvidersState>, project: ProjectWrapState, 
             loading: "Updating auth provider...",
             success: "Auth provider updated successfully",
             error: err => err.message || "Failed to update auth provider",
-        });
-    },
-    enableServiceAccount: () => {
-        if (state.enablingServiceAccount.value) {
-            console.debug("Already enabling service account, ignoring new request");
-            return;
-        }
-        state.enablingServiceAccount.set(true);
-        const url = `${API_SERVER}/authprovider/v1/enable-service-account`;
-        //normal fetch
-        const loadingResolve = auth.fetch(url, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "X-Project-Ids": project.project?.id || "",
-            },
-            body: JSON.stringify({
-                project_id: project.project?.id || ""
-            }),
-        })
-            .then((response) => {
-                if (!response.ok) {
-                    throw new Error("Network response was not ok");
-                }
-                return response.json();
-            })
-            .then((data: EnableServiceAccountResponse) => {
-                if (!data.success) {
-                    throw new Error(data.message || "Failed to enable service account");
-                }
-                state.enabledServiceAccount.set(true);
-                state.enablingServiceAccount.set(false);
-            })
-            .catch((error) => {
-                state.enablingServiceAccount.set(false);
-                throw new Error(`Failed to enable service account: ${error.message}`);
-            });
-        toast.promise(loadingResolve, {
-            loading: "Enabling service account...",
-            success: "Service account enabled successfully",
-            error: err => err.message || "Failed to enable service account",
         });
     },
     resetError: () => {

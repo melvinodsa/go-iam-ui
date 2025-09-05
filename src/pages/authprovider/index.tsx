@@ -11,12 +11,11 @@ import {
 } from "@/components/ui/table"
 import { format } from "@formkit/tempo"
 import { useNavState } from "@/hooks/nav"
-import AddProject from "./AddAuthProvider"
+import AddAuthProvider from "./AddAuthProvider"
 import UpdateProject from "./UpdateAuthProvider"
-import EnableServiceAccount from "./EnableServiceAccount"
 import { useAuthProviderState } from "@/hooks/authproviders"
 import { Badge } from "@/components/ui/badge"
-import {AuthProviderTypeGoIAMClient} from "@/hooks/authproviders"
+import { AuthProviderTypeGoIAMClient } from "@/hooks/authproviders"
 
 
 const AuthProvidersListPage = () => {
@@ -34,8 +33,7 @@ const AuthProvidersListPage = () => {
     return (
         <div className="w-full">
             <div className="flex items-center justify-end py-4 gap-2">
-                <EnableServiceAccount />
-                <AddProject />
+                <AddAuthProvider />
             </div>
             <div className="rounded-md border">
                 <Table>
