@@ -117,7 +117,17 @@ const UpdateAuthProvider = (props: UpdateAuthProviderProps) => {
                             <MicrosoftParams
                                 params={params}
                                 onChange={(newParams) => {
-                                    console.log(newParams);
+                                    setParams(newParams);
+                                }}
+                            />
+                        )
+                    }
+
+                    {
+                        provider === "GITHUB" && (
+                            <GitHubParams
+                                params={params}
+                                onChange={(newParams) => {
                                     setParams(newParams);
                                 }}
                             />
@@ -175,6 +185,32 @@ const GoogleParams = (props: ParamUpdateProps) => {
 }
 
 const MicrosoftParams = (props: ParamUpdateProps) => {
+    const [params, setParams] = useState<Params[]>(props.params);
+
+    const handleChange = (key: string, value: string) => {
+        const newParams = params.map((param) =>
+            param.key === key ? { ...param, value } : param
+        )
+        setParams(newParams);
+        props.onChange(newParams);
+    };
+
+    return (
+        <div>
+            {props.params.map((param) => (
+                <div key={param.key} className="flex items-center gap-2 mb-2">
+                    <Input
+                        placeholder={param.label}
+                        value={param.value}
+                        onChange={(e) => handleChange(param.key, e.target.value)}
+                    />
+                </div>
+            ))}
+        </div>
+    );
+}
+
+const GitHubParams = (props: ParamUpdateProps) => {
     const [params, setParams] = useState<Params[]>(props.params);
 
     const handleChange = (key: string, value: string) => {
