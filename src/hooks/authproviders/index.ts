@@ -12,6 +12,8 @@ export interface Params {
     is_secret: boolean
 }
 
+export const AuthProviderTypeGoIAMClient = "GOIAM/CLIENT";
+
 export interface AuthProvider {
     id: string
     name: string
@@ -43,9 +45,11 @@ interface AuthProvidersState {
     loadingAuthProviders: boolean
     updatingAuthProvider: boolean
     creatingAuthProvider: boolean
+    enablingServiceAccount: boolean
     err: string
     createdAuthProvider: boolean
     updatedAuthProvider: boolean
+    enabledServiceAccount: boolean
 }
 
 const state = hookstate<AuthProvidersState>({
@@ -53,8 +57,10 @@ const state = hookstate<AuthProvidersState>({
     loadingAuthProviders: false,
     updatingAuthProvider: false,
     creatingAuthProvider: false,
+    enablingServiceAccount: false,
     createdAuthProvider: false,
     updatedAuthProvider: false,
+    enabledServiceAccount: false,
     err: "",
 })
 
@@ -88,9 +94,9 @@ const wrapState = (state: State<AuthProvidersState>, project: ProjectWrapState, 
                 throw new Error(`Failed to fetch auth providers: ${error.message}`);
             });
         toast.promise(loadingResolve, {
-            loading: "Loading projects...",
-            success: "Projects loaded successfully",
-            error: err => err.message || "Failed to load projects",
+            loading: "Loading auth providers...",
+            success: "Auth providers loaded successfully",
+            error: err => err.message || "Failed to load auth providers",
         });
     },
     createAuthProvider: (authProvider: AuthProvider) => {
@@ -180,17 +186,23 @@ const wrapState = (state: State<AuthProvidersState>, project: ProjectWrapState, 
     resetUpdatedAuthProvider: () => {
         state.updatedAuthProvider.set(false);
     },
+    resetEnabledServiceAccount: () => {
+        state.enabledServiceAccount.set(false);
+    },
     updatedAuthProvider: state.updatedAuthProvider.value,
     createdAuthProvider: state.createdAuthProvider.value,
+    enabledServiceAccount: state.enabledServiceAccount.value,
     loadingAuthProviders: state.loadingAuthProviders.value,
     updatingAuthProvider: state.updatingAuthProvider.value,
     creatingAuthProvider: state.creatingAuthProvider.value,
+    enablingServiceAccount: state.enablingServiceAccount.value,
     err: state.err.value,
     authproviders: state.authproviders.value,
     authprovidersMap: state.authproviders.value.reduce<{ [key: string]: ImmutableObject<AuthProvider> }>((acc, authProvider) => {
         acc[authProvider.id] = authProvider;
         return acc;
     }, {}),
+    hasServiceAccount: state.authproviders.value.some(provider => provider.provider === AuthProviderTypeGoIAMClient),
 })
 
 

@@ -1,7 +1,7 @@
 
 
 
-import { Edit, Loader2Icon } from "lucide-react"
+import { Edit, Info, Loader2Icon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 
@@ -31,6 +31,8 @@ import { useClientState, type Client } from "@/hooks/clients"
 import { useAuthProviderState } from "@/hooks/authproviders"
 import { Checkbox } from "@/components/ui/checkbox"
 import { useAuthState } from "@/hooks/auth"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import RegenerateSecret from "./RegenerateSecret"
 
 interface UpdateClientProps {
     data: Client
@@ -48,7 +50,7 @@ const UpdateClient = (props: UpdateClientProps) => {
     const [defaultAuthProviderId, setDefaultAuthProviderId] = useState(props.data.default_auth_provider_id || "");
     const [goIamClient, setGoIamClient] = useState(props.data.go_iam_client || false);
 
-    const client = useMemo(() => ({
+    const client = useMemo<Client>(() => ({
         id: props.data.id,
         name: name,
         description: description,
@@ -57,6 +59,8 @@ const UpdateClient = (props: UpdateClientProps) => {
         redirect_urls: redirectUrls.split(",").map(url => url.trim()), // Split redirect URLs by comma and trim whitespace
         project_id: props.data.project_id || "",
         default_auth_provider_id: defaultAuthProviderId,
+        service_account_email: props.data.service_account_email || "",
+        linked_user_id: props.data.linked_user_id || "",
         go_iam_client: goIamClient,
         enabled: true,
         created_at: new Date().toISOString(),
@@ -111,27 +115,60 @@ const UpdateClient = (props: UpdateClientProps) => {
                         <Label htmlFor="tags-1">Tags</Label>
                         <Textarea id="tags-1" name="tags" placeholder="Comma separated tags" value={tags} onChange={(e) => setTags(e.target.value)} />
                     </div>
-                    <div className="grid gap-3">
-                        <Label htmlFor="redirect-urls-1">Redirected Urls</Label>
-                        <Textarea id="redirect-urls-1" name="redirect-urls" placeholder="Comma separated redirected urls" value={redirectUrls} onChange={(e) => setRedirectUrls(e.target.value)} />
-                    </div>
-                    <Select value={defaultAuthProviderId} onValueChange={(value) => setDefaultAuthProviderId(value)}>
-                        <SelectTrigger className="w-[180px]">
-                            <SelectValue placeholder="Select provider" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectGroup>
-                                <SelectLabel>Auth Providers</SelectLabel>
-                                {authProviderState.authproviders.map((provider) => (
-                                    <SelectItem key={provider.id} value={provider.id}>{provider.name}</SelectItem>
-                                ))}
-                            </SelectGroup>
-                        </SelectContent>
-                    </Select>
-                    <div className="flex items-center gap-3">
-                        <Checkbox id="terms" checked={goIamClient} disabled={authState.clientAvailable} onCheckedChange={value => setGoIamClient(value === true || value === 'indeterminate')} />
-                        <Label htmlFor="terms">Set as Go IAM Client</Label>
-                    </div>
+                    {
+                        defaultAuthProviderId && (
+                            <>
+                                <div className="grid gap-3">
+                                    <Label htmlFor="redirect-urls-1">Redirected Urls</Label>
+                                    <Textarea id="redirect-urls-1" name="redirect-urls" placeholder="Comma separated redirected urls" value={redirectUrls} onChange={(e) => setRedirectUrls(e.target.value)} />
+                                </div>
+                                <Select value={defaultAuthProviderId} onValueChange={(value) => setDefaultAuthProviderId(value)}>
+                                    <SelectTrigger className="w-[180px]">
+                                        <SelectValue placeholder="Select provider" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectGroup>
+                                            <SelectLabel>Auth Providers</SelectLabel>
+                                            {authProviderState.authproviders.map((provider) => (
+                                                <SelectItem key={provider.id} value={provider.id}>{provider.name}</SelectItem>
+                                            ))}
+                                        </SelectGroup>
+                                    </SelectContent>
+                                </Select>
+                                {!authState.clientAvailable && (
+                                    <div className="flex items-center gap-3">
+                                        <Checkbox id="terms" checked={goIamClient} disabled={authState.clientAvailable} onCheckedChange={value => setGoIamClient(value === true || value === 'indeterminate')} />
+                                        <Label htmlFor="terms">Set as Go IAM Client</Label>
+                                    </div>
+                                )}
+                            </>
+                        )
+                    }
+                    {
+                        props.data.service_account_email && (
+                            <>
+                                <Alert>
+                                    <Info className="h-4 w-4" />
+                                    <AlertDescription>
+                                        Service account clients require a linked user. The client will inherit the permissions of this user.
+                                    </AlertDescription>
+                                </Alert>
+                                <div className="grid gap-3">
+                                    <Label htmlFor="linked-user-email">Linked User Email *</Label>
+                                    <Input
+                                        id="linked-user-email"
+                                        name="linked-user-email"
+                                        type="email"
+                                        value={props.data.service_account_email}
+                                        readOnly
+                                    />
+                                </div>
+                                <div>
+                                    <RegenerateSecret data={props.data} />
+                                </div>
+                            </>
+                        )
+                    }
                 </div>
                 <DialogFooter>
                     <DialogClose asChild>
