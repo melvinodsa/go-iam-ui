@@ -24,11 +24,7 @@ const DisableResource = (props: DisableResourceProps) => {
     const [dialogOpen, setDialogOpen] = useState(false);
 
     const handleDisable = useCallback(() => {
-        state.updateResource(Object.assign({}, props.data, {
-            enabled: false,
-            updated_at: new Date().toISOString(),
-            updated_by: "system", // This should be replaced with the actual user ID
-        }))
+        state.deleteResource(props.data.id);
     }, [props.data.id]);
 
     useEffect(() => {
