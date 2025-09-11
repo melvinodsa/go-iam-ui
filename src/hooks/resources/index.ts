@@ -181,6 +181,44 @@ const wrapState = (state: State<ResourceState>, project: ProjectWrapState, auth:
             error: err => err.message || "Failed to update resource",
         });
     },
+    deleteResource: (id: string) => {
+        if (state.updatingResource.value) {
+            console.debug("Already updating, ignoring new delete request");
+            return;
+        }
+        state.updatingResource.set(true);
+        const url = `${API_SERVER}/resource/v1/${id}`;
+        //normal fetch
+        const loadingResolve = auth.fetch(url, {
+            method: "DELETE",
+            headers: {
+                "Content-Type": "application/json",
+                "X-Project-Ids": project.project?.id || "",
+            },
+        })
+            .then((response) => {
+                if (!response.ok) {
+                    throw new Error("Network response was not ok");
+                }
+                return response.json();
+            })
+            .then((data: ResourceResponse) => {
+                if (!data.success) {
+                    throw new Error(data.message || "Failed to delete resource");
+                }
+                state.updatedResource.set(true);
+                state.updatingResource.set(false);
+            })
+            .catch((error) => {
+                state.updatingResource.set(false);
+                throw new Error(`Failed to delete resource: ${error.message}`);
+            });
+        toast.promise(loadingResolve, {
+            loading: "Deleting resources...",
+            success: "Resource deleted successfully",
+            error: err => err.message || "Failed to delete resource",
+        });
+    },
     resetError: () => {
         state.err.set("");
     },
