@@ -81,9 +81,9 @@ const UpdatePolicy = (props: UpdatePolicyProps) => {
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
-                    <DialogTitle>Update Role</DialogTitle>
+                    <DialogTitle>Update Policy</DialogTitle>
                     <DialogDescription>
-                        Update roles for the user in the system
+                        Update policies for the user in the system
                     </DialogDescription>
                 </DialogHeader>
                 <div className="grid gap-4">
