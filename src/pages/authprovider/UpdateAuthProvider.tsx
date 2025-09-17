@@ -99,6 +99,8 @@ const UpdateAuthProvider = (props: UpdateAuthProviderProps) => {
                                 <SelectLabel>Providers</SelectLabel>
                                 <SelectItem value="GOOGLE">Google</SelectItem>
                                 <SelectItem value="MICROSOFT">Microsoft</SelectItem>
+                                <SelectItem value="GITHUB">GitHub</SelectItem>
+                                <SelectItem value="OIDC">OpenID Connect</SelectItem>
                             </SelectGroup>
                         </SelectContent>
                     </Select>
@@ -133,6 +135,15 @@ const UpdateAuthProvider = (props: UpdateAuthProviderProps) => {
                             />
                         )
                     }
+
+                    {provider === "OIDC" && (
+                        <OIDCParams
+                            params={params}
+                            onChange={(newParams) => {
+                                setParams(newParams);
+                            }}
+                        />
+                    )}
                 </div>
                 <DialogFooter>
                     <DialogClose asChild>
@@ -211,6 +222,32 @@ const MicrosoftParams = (props: ParamUpdateProps) => {
 }
 
 const GitHubParams = (props: ParamUpdateProps) => {
+    const [params, setParams] = useState<Params[]>(props.params);
+
+    const handleChange = (key: string, value: string) => {
+        const newParams = params.map((param) =>
+            param.key === key ? { ...param, value } : param
+        )
+        setParams(newParams);
+        props.onChange(newParams);
+    };
+
+    return (
+        <div>
+            {props.params.map((param) => (
+                <div key={param.key} className="flex items-center gap-2 mb-2">
+                    <Input
+                        placeholder={param.label}
+                        value={param.value}
+                        onChange={(e) => handleChange(param.key, e.target.value)}
+                    />
+                </div>
+            ))}
+        </div>
+    );
+}
+
+const OIDCParams = (props: ParamUpdateProps) => {
     const [params, setParams] = useState<Params[]>(props.params);
 
     const handleChange = (key: string, value: string) => {
