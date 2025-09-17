@@ -96,6 +96,7 @@ const AddAuthProvider = () => {
                                 <SelectItem value="GOOGLE">Google</SelectItem>
                                 <SelectItem value="MICROSOFT">Microsoft</SelectItem>
                                 <SelectItem value="GITHUB">GitHub</SelectItem>
+                                <SelectItem value="OIDC">OpenID Connect</SelectItem>
                             </SelectGroup>
                         </SelectContent>
                     </Select>
@@ -123,6 +124,16 @@ const AddAuthProvider = () => {
                     {
                         provider === "GITHUB" && (
                             <GitHubParams
+                                params={params}
+                                onChange={(newParams) => {
+                                    setParams(newParams);
+                                }}
+                            />
+                        )
+                    }
+                    {
+                        provider === "OIDC" && (
+                            <OIDCParams
                                 params={params}
                                 onChange={(newParams) => {
                                     setParams(newParams);
@@ -230,6 +241,42 @@ const GitHubParamsList = [
 
 const GitHubParams = (props: ParamUpdateProps) => {
     const [params, setParams] = useState<Params[]>(GitHubParamsList);
+
+    const handleChange = (key: string, value: string) => {
+        const newParams = params.map((param) =>
+            param.key === key ? { ...param, value } : param
+        )
+        setParams(newParams);
+        props.onChange(newParams);
+    };
+
+    return (
+        <div>
+            {params.map((param) => (
+                <div key={param.key} className="flex items-center gap-2 mb-2">
+                    <Input
+                        placeholder={param.label}
+                        value={param.value}
+                        onChange={(e) => handleChange(param.key, e.target.value)}
+                    />
+                </div>
+            ))}
+        </div>
+    );
+}
+
+const OIDCParamsList = [
+    { label: "Client ID", value: "", key: "@OIDC/CLIENT_ID", is_secret: false },
+    { label: "Client Secret", value: "", key: "@OIDC/CLIENT_SECRET", is_secret: true },
+    { label: "Redirect URL", value: "", key: "@OIDC/REDIRECT_URL", is_secret: false },
+    { label: "Token URL", value: "", key: "@OIDC/TOKEN_URL", is_secret: false },
+    { label: "Authorization URL", value: "", key: "@OIDC/AUTHORIZATION_URL", is_secret: false },
+    { label: "User Info URL", value: "", key: "@OIDC/USERINFO_URL", is_secret: false },
+]
+
+
+const OIDCParams = (props: ParamUpdateProps) => {
+    const [params, setParams] = useState<Params[]>(OIDCParamsList);
 
     const handleChange = (key: string, value: string) => {
         const newParams = params.map((param) =>
