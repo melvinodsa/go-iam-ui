@@ -20,6 +20,7 @@ import DisableUser from "./DisableUser"
 import UpdateUser from "./UpdateUser"
 import UpdateRole from "./UpdateRole"
 import UpdatePolicy from "./UpdatePolicy"
+import TransferOwnership from "./TransferOwnership"
 
 const UsersListPage = () => {
     const navState = useNavState()
@@ -106,6 +107,7 @@ const UsersListPage = () => {
                                     <UpdateRole data={user} />
                                     <UpdatePolicy data={user} />
                                     <DisableUser data={user} />
+                                    <TransferOwnership userId={user.id} />
                                 </TableCell>
                             </TableRow>
                         ))}
