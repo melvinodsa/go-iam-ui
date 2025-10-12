@@ -29,6 +29,16 @@ import { useCallback, useEffect, useState } from "react"
 import { useAuthProviderState, type Params } from "@/hooks/authproviders"
 import { useProjectState } from "@/hooks/projects"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
+import { Link } from "react-router-dom"
+
+
+const needHelpLinks: { [key: string]: string } = {
+    "GOOGLE": "https://developers.google.com/identity/protocols/oauth2",
+    "MICROSOFT": "https://learn.microsoft.com/en-us/entra/identity-platform/v2-app-types",
+    "GITHUB": "https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/authorizing-oauth-apps",
+    "OIDC": "https://openid.net/developers/how-connect-works/",
+    "": ""
+}
 
 
 const AddAuthProvider = () => {
@@ -94,20 +104,26 @@ const AddAuthProvider = () => {
                         <Label htmlFor="name-1">Name</Label>
                         <Input id="name-1" name="name" placeholder="Dashboard google auth" value={name} onChange={(e) => setName(e.target.value)} />
                     </div>
-                    <Select value={provider} onValueChange={(value) => setProvider(value)}>
-                        <SelectTrigger className="w-[180px]">
-                            <SelectValue placeholder="Select provider" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectGroup>
-                                <SelectLabel>Providers</SelectLabel>
-                                <SelectItem value="GOOGLE">Google</SelectItem>
-                                <SelectItem value="MICROSOFT">Microsoft</SelectItem>
-                                <SelectItem value="GITHUB">GitHub</SelectItem>
-                                <SelectItem value="OIDC">OpenID Connect</SelectItem>
-                            </SelectGroup>
-                        </SelectContent>
-                    </Select>
+                    <div className="flex justify-between">
+
+                        <Select value={provider} onValueChange={(value) => setProvider(value)}>
+                            <SelectTrigger className="w-[180px]">
+                                <SelectValue placeholder="Select provider" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectGroup>
+                                    <SelectLabel>Providers</SelectLabel>
+                                    <SelectItem value="GOOGLE">Google</SelectItem>
+                                    <SelectItem value="MICROSOFT">Microsoft</SelectItem>
+                                    <SelectItem value="GITHUB">GitHub</SelectItem>
+                                    <SelectItem value="OIDC">OpenID Connect</SelectItem>
+                                </SelectGroup>
+                            </SelectContent>
+                        </Select>
+                        <Link to={needHelpLinks[provider]} target="_blank" rel="noreferrer">
+                            <Button variant="link">Need help?</Button>
+                        </Link>
+                    </div>
                     {
                         provider === "GOOGLE" && (
                             <GoogleParams
