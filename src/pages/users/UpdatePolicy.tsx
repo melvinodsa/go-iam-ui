@@ -22,6 +22,7 @@ import { DataType, usePolicyState, type Policy } from "@/hooks/policies"
 import type { Immutable, ImmutableObject } from "@hookstate/core"
 import SingleSearchSelector from "@/components/ui/single-search-selector"
 import { useRoleState } from "@/hooks/roles"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 
 interface UpdatePolicyProps {
     data: User
@@ -74,10 +75,16 @@ const UpdatePolicy = (props: UpdatePolicyProps) => {
     return (
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
-
-                <Button variant="ghost" size="icon">
-                    <FileText className="h-4 w-4" />
-                </Button>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <Button variant="ghost" size="icon" onClick={() => setDialogOpen(true)}>
+                            <FileText className="h-4 w-4" />
+                        </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                        <p>Edit Polciies</p>
+                    </TooltipContent>
+                </Tooltip>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>

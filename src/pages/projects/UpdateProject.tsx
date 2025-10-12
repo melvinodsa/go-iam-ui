@@ -19,6 +19,7 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { useCallback, useEffect, useState } from "react"
 import { useProjectState, type Project } from "@/hooks/projects"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 
 interface UpdateProjectProps {
     data: Project
@@ -60,10 +61,16 @@ const UpdateProject = (props: UpdateProjectProps) => {
     return (
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
-
-                <Button variant="ghost" size="icon">
-                    <Edit className="h-4 w-4" />
-                </Button>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <Button variant="ghost" size="icon" onClick={() => setDialogOpen(true)}>
+                            <Edit className="h-4 w-4" />
+                        </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                        <p>Edit Project</p>
+                    </TooltipContent>
+                </Tooltip>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>

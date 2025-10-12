@@ -28,6 +28,7 @@ import {
 import { useCallback, useEffect, useState } from "react"
 import { useAuthProviderState, type AuthProvider, type Params } from "@/hooks/authproviders"
 import { useProjectState } from "@/hooks/projects"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 
 interface UpdateAuthProviderProps {
     data: AuthProvider
@@ -73,10 +74,16 @@ const UpdateAuthProvider = (props: UpdateAuthProviderProps) => {
     return (
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
-
-                <Button variant="ghost" size="icon">
-                    <Edit className="h-4 w-4" />
-                </Button>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <Button variant="ghost" size="icon" onClick={() => setDialogOpen(true)}>
+                            <Edit className="h-4 w-4" />
+                        </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                        <p>Edit Auth Provider</p>
+                    </TooltipContent>
+                </Tooltip>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>

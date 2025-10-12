@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/dialog";
 import { CircleX } from "lucide-react";
 import { Loader2Icon } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 
 interface DisableResourceProps {
     data: Resource
@@ -38,9 +39,16 @@ const DisableResource = (props: DisableResourceProps) => {
     return (
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
-                <Button variant="ghost" size="icon">
-                    <CircleX className="h-4 w-4" />
-                </Button>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <Button variant="ghost" size="icon" onClick={() => setDialogOpen(true)}>
+                            <CircleX className="h-4 w-4" />
+                        </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                        <p>Disable Resource</p>
+                    </TooltipContent>
+                </Tooltip>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>

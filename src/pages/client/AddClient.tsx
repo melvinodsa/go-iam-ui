@@ -33,6 +33,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Info } from "lucide-react"
 import { AuthProviderTypeGoIAMClient } from "@/hooks/authproviders"
 import { Separator } from "@/components/ui/separator"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 
 
 const AddClient = () => {
@@ -150,9 +151,16 @@ const AddClient = () => {
     return (
         <Dialog open={dialogOpen} onOpenChange={handleDialogClose}>
             <DialogTrigger asChild>
-                <Button>
-                    <CirclePlus className="mr-2 h-4 w-4" />Add
-                </Button>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <Button onClick={() => setDialogOpen(true)}>
+                            <CirclePlus className="mr-2 h-4 w-4" />Add
+                        </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                        <p>Add Client</p>
+                    </TooltipContent>
+                </Tooltip>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[525px]">
                 <DialogHeader>

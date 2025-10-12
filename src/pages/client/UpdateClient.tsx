@@ -33,6 +33,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { useAuthState } from "@/hooks/auth"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import RegenerateSecret from "./RegenerateSecret"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 
 interface UpdateClientProps {
     data: Client
@@ -90,10 +91,16 @@ const UpdateClient = (props: UpdateClientProps) => {
     return (
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
-
-                <Button variant="ghost" size="icon">
-                    <Edit className="h-4 w-4" />
-                </Button>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <Button variant="ghost" size="icon" onClick={() => setDialogOpen(true)}>
+                            <Edit className="h-4 w-4" />
+                        </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                        <p>Edit Client</p>
+                    </TooltipContent>
+                </Tooltip>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>

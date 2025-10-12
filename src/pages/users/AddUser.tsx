@@ -19,6 +19,7 @@ import { Label } from "@/components/ui/label"
 import { useCallback, useEffect, useState } from "react"
 import { useProjectState } from "@/hooks/projects"
 import { useUserState } from "@/hooks/users"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 
 
 const AddUser = () => {
@@ -66,9 +67,16 @@ const AddUser = () => {
     return (
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
-                <Button>
-                    <CirclePlus className="mr-2 h-4 w-4" />Add
-                </Button>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <Button onClick={() => setDialogOpen(true)}>
+                            <CirclePlus className="mr-2 h-4 w-4" />Add
+                        </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                        <p>Add User</p>
+                    </TooltipContent>
+                </Tooltip>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[625px]">
                 <DialogHeader>

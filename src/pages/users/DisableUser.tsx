@@ -14,6 +14,7 @@ import {
 import { CircleX } from "lucide-react";
 import { Loader2Icon } from "lucide-react";
 import { useUserState, type User } from "@/hooks/users";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 
 interface DisableUserProps {
     data: User
@@ -42,9 +43,16 @@ const DisableUser = (props: DisableUserProps) => {
     return (
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
-                <Button variant="ghost" size="icon">
-                    <CircleX className="h-4 w-4" />
-                </Button>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <Button variant="ghost" size="icon" onClick={() => setDialogOpen(true)}>
+                            <CircleX className="h-4 w-4" />
+                        </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                        <p>Disable User</p>
+                    </TooltipContent>
+                </Tooltip>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>

@@ -19,6 +19,7 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { useCallback, useEffect, useState } from "react"
 import { useProjectState } from "@/hooks/projects"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 
 
 const AddProject = () => {
@@ -56,9 +57,16 @@ const AddProject = () => {
     return (
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
-                <Button>
-                    <CirclePlus className="mr-2 h-4 w-4" />Add
-                </Button>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <Button onClick={() => setDialogOpen(true)}>
+                            <CirclePlus className="mr-2 h-4 w-4" />Add
+                        </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                        <p>Add Project</p>
+                    </TooltipContent>
+                </Tooltip>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>

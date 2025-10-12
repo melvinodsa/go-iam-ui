@@ -4,6 +4,7 @@ import SingleSearchSelector from "@/components/ui/single-search-selector";
 import { useUserState } from "@/hooks/users";
 import { Loader2Icon, ReplaceAll } from "lucide-react";
 import { useCallback, useState } from "react";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 
 
 const TransferOwnership = (props: { userId: string }) => {
@@ -21,10 +22,16 @@ const TransferOwnership = (props: { userId: string }) => {
     return (
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
-
-                <Button variant="ghost" size="icon">
-                    <ReplaceAll className="h-4 w-4" />
-                </Button>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <Button variant="ghost" size="icon" onClick={() => setDialogOpen(true)}>
+                            <ReplaceAll className="h-4 w-4" />
+                        </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                        <p>Transfer Ownership</p>
+                    </TooltipContent>
+                </Tooltip>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>

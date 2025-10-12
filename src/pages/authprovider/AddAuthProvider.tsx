@@ -28,6 +28,7 @@ import {
 import { useCallback, useEffect, useState } from "react"
 import { useAuthProviderState, type Params } from "@/hooks/authproviders"
 import { useProjectState } from "@/hooks/projects"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 
 
 const AddAuthProvider = () => {
@@ -70,9 +71,16 @@ const AddAuthProvider = () => {
     return (
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
-                <Button>
-                    <CirclePlus className="mr-2 h-4 w-4" />Add
-                </Button>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <Button onClick={() => setDialogOpen(true)}>
+                            <CirclePlus className="mr-2 h-4 w-4" />Add
+                        </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                        <p>Add Auth Provider</p>
+                    </TooltipContent>
+                </Tooltip>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>

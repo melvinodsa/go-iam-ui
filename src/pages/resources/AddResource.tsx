@@ -20,6 +20,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { useResourceState } from "@/hooks/resources"
 import { useCallback, useEffect, useState } from "react"
 import { useProjectState } from "@/hooks/projects"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 
 
 const AddResource = () => {
@@ -60,9 +61,16 @@ const AddResource = () => {
     return (
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
-                <Button>
-                    <CirclePlus className="mr-2 h-4 w-4" />Register
-                </Button>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <Button onClick={() => setDialogOpen(true)}>
+                            <CirclePlus className="mr-2 h-4 w-4" />Add
+                        </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                        <p>Register Resource</p>
+                    </TooltipContent>
+                </Tooltip>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
