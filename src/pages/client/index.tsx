@@ -61,7 +61,6 @@ const ClientsListPage = () => {
                         <TableRow>
                             <TableHead>Name</TableHead>
                             <TableHead>Client ID</TableHead>
-                            <TableHead>Client Secret</TableHead>
                             <TableHead>Auth Provider</TableHead>
                             <TableHead>Updated At</TableHead>
                             <TableHead></TableHead>
