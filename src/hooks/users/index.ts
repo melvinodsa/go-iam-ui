@@ -324,6 +324,44 @@ const wrapState = (state: State<UserState>, project: ProjectWrapState, auth: Aut
             error: err => err.message || "Failed to transfer ownership",
         });
     },
+    copyResources: (sourceUserId: string, targetUserId: string) => {
+        if (state.updatingUser.value) {
+            console.debug("Already updating, ignoring new update request");
+            return;
+        }
+        state.updatingUser.set(true);
+        const url = `${API_SERVER}/user/v1/${sourceUserId}/copy-resources/${targetUserId}`;
+        //normal fetch
+        const loadingResolve = auth.fetch(url, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                "X-Project-Ids": project.project?.id || "",
+            }
+        })
+            .then((response) => {
+                if (!response.ok) {
+                    throw new Error("Network response was not ok");
+                }
+                return response.json();
+            })
+            .then((data: UserResponse) => {
+                if (!data.success) {
+                    throw new Error(data.message || "Failed to copy resources");
+                }
+                state.updatedUser.set(true);
+                state.updatingUser.set(false);
+            })
+            .catch((error) => {
+                state.updatingUser.set(false);
+                throw new Error(`Failed to copy resources: ${error.message}`);
+            });
+        toast.promise(loadingResolve, {
+            loading: "Copying resources...",
+            success: "Resources copied successfully",
+            error: err => err.message || "Failed to copy resources",
+        });
+    },
     resetError: () => {
         state.err.set("");
     },

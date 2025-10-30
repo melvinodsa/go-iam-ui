@@ -127,7 +127,7 @@ const UpdatePolicy = (props: UpdatePolicyProps) => {
                         <h4 className="mb-4 text-sm leading-none font-medium">Policies</h4>
                         {Object.keys(policies).map((policy) => (
                             <React.Fragment key={policy}>
-                                <div className="text-sm">{policies[policy]?.name}</div>
+                                <div className="text-sm">{policies && policies[policy]?.name}</div>
                                 <Separator className="my-2" />
                             </React.Fragment>
                         ))}

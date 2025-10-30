@@ -21,6 +21,7 @@ import UpdateUser from "./UpdateUser"
 import UpdateRole from "./UpdateRole"
 import UpdatePolicy from "./UpdatePolicy"
 import TransferOwnership from "./TransferOwnership"
+import CopyResources from "./CopyResources"
 
 const UsersListPage = () => {
     const navState = useNavState()
@@ -108,6 +109,7 @@ const UsersListPage = () => {
                                     <UpdatePolicy data={user} />
                                     <DisableUser data={user} />
                                     <TransferOwnership userId={user.id} />
+                                    <CopyResources userId={user.id} />
                                 </TableCell>
                             </TableRow>
                         ))}
