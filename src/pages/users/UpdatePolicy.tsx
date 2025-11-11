@@ -72,6 +72,7 @@ const UpdatePolicy = (props: UpdatePolicyProps) => {
             setPolicies(prev => ({ ...prev, [policy.id]: { name: policy.name, mapping: { arguments: {} } } }))
         }
     }, [policy]);
+    console.log(policies)
     return (
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
@@ -125,7 +126,7 @@ const UpdatePolicy = (props: UpdatePolicyProps) => {
                 <ScrollArea className="h-72 w-full rounded-md border">
                     <div className="p-4">
                         <h4 className="mb-4 text-sm leading-none font-medium">Policies</h4>
-                        {Object.keys(policies).map((policy) => (
+                        {policies && Object.keys(policies).map((policy) => (
                             <React.Fragment key={policy}>
                                 <div className="text-sm">{policies && policies[policy]?.name}</div>
                                 <Separator className="my-2" />
