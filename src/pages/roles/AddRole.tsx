@@ -88,7 +88,7 @@ const AddRole = () => {
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
-                    <DialogTitle>Register Resource</DialogTitle>
+                    <DialogTitle>Register Role</DialogTitle>
                     <DialogDescription>
                         Register a resource in the system
                     </DialogDescription>
