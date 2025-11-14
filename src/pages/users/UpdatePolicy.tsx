@@ -223,11 +223,11 @@ const DataSelector = (props: DataSelectorProps) => {
     }
     const searchOptions = useCallback((search: string) => {
         if (props.dataType === DataType.User) {
-            userState.fetchUsers(search, 1, 10);
+            userState.fetchUsersForWidgets(search, 1, 10);
         } else if (props.dataType === DataType.Role) {
             roleState.fetchRoles(search, 1, 10);
         }
-    }, [roleState.fetchRoles, userState.fetchUsers, props.dataType]);
+    }, [roleState.fetchRoles, userState.fetchUsersForWidgets, props.dataType]);
     return (
         <div className="grid gap-4">
             <SingleSearchSelector

@@ -66,6 +66,7 @@ interface UserResponse {
 }
 
 interface UserState {
+    usersForWidgets: User[]
     users: User[]
     loadingUsers: boolean
     updatingUser: boolean
@@ -79,6 +80,7 @@ interface UserState {
 }
 
 const state = hookstate<UserState>({
+    usersForWidgets: [],
     users: [],
     loadingUsers: false,
     updatingUser: false,
@@ -119,6 +121,42 @@ const wrapState = (state: State<UserState>, project: ProjectWrapState, auth: Aut
                 state.total.set(data.data.total);
                 state.pages.set(Array.from({ length: Math.ceil(data.data.total / limit) }, (_, i) => i + 1));
                 state.currentPage.set(page);
+                state.loadingUsers.set(false);
+            })
+            .catch((error) => {
+                state.loadingUsers.set(false);
+                throw new Error(`Failed to fetch users: ${error.message}`);
+            });
+        toast.promise(loadingResolve, {
+            loading: "Loading users...",
+            success: "Users loaded successfully",
+            error: err => err.message || "Failed to load users",
+        });
+    },
+    fetchUsersForWidgets: (search: string, page: number, limit: number) => {
+        if (state.loadingUsers.value) {
+            console.debug("Already loading, ignoring new fetch request");
+            return;
+        }
+        state.loadingUsers.set(true);
+        const sanirisedSearch = encodeURIComponent(search.trim());
+        const url = `${API_SERVER}/user/v1/?query=${sanirisedSearch}&skip=${(page - 1) * limit}&limit=${limit}`;
+        //normal fetch
+        const loadingResolve = auth.fetch(url, {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+                "X-Project-Ids": project.project?.id || "",
+            },
+        })
+            .then((response) => {
+                if (!response.ok) {
+                    throw new Error("Network response was not ok");
+                }
+                return response.json();
+            })
+            .then((data: UsersResponse) => {
+                state.usersForWidgets.set(data.data.users);
                 state.loadingUsers.set(false);
             })
             .catch((error) => {

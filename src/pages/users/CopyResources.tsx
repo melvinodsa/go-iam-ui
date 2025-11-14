@@ -78,8 +78,8 @@ const DataSelector = (props: DataSelectorProps) => {
         value: user.id
     }));
     const searchOptions = useCallback((search: string) => {
-        userState.fetchUsers(search, 1, 10);
-    }, [userState.fetchUsers]);
+        userState.fetchUsersForWidgets(search, 1, 10);
+    }, [userState.fetchUsersForWidgets]);
     return (
         <div className="grid gap-4">
             <SingleSearchSelector
