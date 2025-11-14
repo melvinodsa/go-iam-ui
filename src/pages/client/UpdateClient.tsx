@@ -170,12 +170,12 @@ const UpdateClient = (props: UpdateClientProps) => {
                                         readOnly
                                     />
                                 </div>
-                                <div>
-                                    <RegenerateSecret data={props.data} />
-                                </div>
                             </>
                         )
                     }
+                    <div>
+                        <RegenerateSecret data={props.data} />
+                    </div>
                 </div>
                 <DialogFooter>
                     <DialogClose asChild>
