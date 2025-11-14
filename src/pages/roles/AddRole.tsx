@@ -90,7 +90,7 @@ const AddRole = () => {
                 <DialogHeader>
                     <DialogTitle>Register Role</DialogTitle>
                     <DialogDescription>
-                        Register a resource in the system
+                        Register a role in the system
                     </DialogDescription>
                 </DialogHeader>
                 <div className="grid gap-4">
