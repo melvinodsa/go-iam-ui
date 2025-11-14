@@ -38,7 +38,7 @@ const UpdateUser = (props: UpdateUserProps) => {
             name: name,
             email: props.data.email || "",
             phone: props.data.phone || "",
-            expiry: props.data.expiry || "",
+            expiry: props.data.expiry || null,
             resources: props.data.resources || {},
             policies: props.data.policies || {},
             roles: props.data.roles || {},
