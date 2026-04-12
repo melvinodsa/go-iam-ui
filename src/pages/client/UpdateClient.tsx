@@ -49,6 +49,7 @@ const UpdateClient = (props: UpdateClientProps) => {
     const [tags, setTags] = useState(props.data.tags.join(", ") || "");
     const [redirectUrls, setRedirectUrls] = useState(props.data.redirect_urls.join(", ") || "");
     const [defaultAuthProviderId, setDefaultAuthProviderId] = useState(props.data.default_auth_provider_id || "");
+    const [allowedEmailDomains, setAllowedEmailDomains] = useState(props.data.allowed_email_domains || []);
     const [goIamClient, setGoIamClient] = useState(props.data.go_iam_client || false);
 
     const client = useMemo<Client>(() => ({
@@ -63,12 +64,13 @@ const UpdateClient = (props: UpdateClientProps) => {
         service_account_email: props.data.service_account_email || "",
         linked_user_id: props.data.linked_user_id || "",
         go_iam_client: goIamClient,
+        allowed_email_domains: allowedEmailDomains,
         enabled: true,
         created_at: new Date().toISOString(),
         created_by: "system", // This should be replaced with the actual user ID
         updated_at: new Date().toISOString(),
         updated_by: "system", // This should be replaced with the actual user ID
-    }), [name, description, tags, redirectUrls, defaultAuthProviderId, props.data.project_id, props.data.id, props.data.secret, goIamClient]);
+    }), [name, description, tags, redirectUrls, defaultAuthProviderId, props.data.project_id, props.data.id, props.data.secret, goIamClient, allowedEmailDomains]);
 
     useEffect(() => {
         if (state.updatedClient) {
@@ -148,6 +150,13 @@ const UpdateClient = (props: UpdateClientProps) => {
                                         <Label htmlFor="terms">Set as Go IAM Client</Label>
                                     </div>
                                 )}
+                                <div className="grid gap-3">
+                                    <Label htmlFor="allowed-email-domains">Allowed Email Domains</Label>
+                                    <Textarea id="allowed-email-domains" name="allowed-email-domains" placeholder="Comma separated allowed email domains" value={allowedEmailDomains.join(", ")} onChange={(e) => {
+                                        const allowedEmailDomains = e.target.value.split(",").map(domain => domain.trim()).filter(domain => domain.length > 0);
+                                        setAllowedEmailDomains(allowedEmailDomains);
+                                    }} />
+                                </div>
                             </>
                         )
                     }

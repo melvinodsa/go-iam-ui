@@ -16,6 +16,7 @@ export interface Client {
     go_iam_client: boolean
     enabled: boolean
     linked_user_id?: string
+    allowed_email_domains: string[]
     service_account_email?: string
     created_at: string
     created_by: string

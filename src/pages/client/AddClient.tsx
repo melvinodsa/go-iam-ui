@@ -51,6 +51,7 @@ const AddClient = () => {
     const [copiedId, setCopiedId] = useState(false);
     const [hasServiceAccount, setHasServiceAccount] = useState(false);
     const [goIamClient, setGoIamClient] = useState(false);
+    const [allowedEmailDomains, setAllowedEmailDomains] = useState<string[]>([]);
     const [linkedUserEmail, setLinkedUserEmail] = useState("");
 
     const client = useMemo<Client>(() => {
@@ -66,6 +67,7 @@ const AddClient = () => {
             service_account_email: linkedUserEmail,
             enabled: true,
             go_iam_client: goIamClient,
+            allowed_email_domains: allowedEmailDomains,
             created_at: new Date().toISOString(),
             created_by: "system",
             updated_at: new Date().toISOString(),
@@ -239,6 +241,16 @@ const AddClient = () => {
                                         <Label htmlFor="terms">Set as Go IAM Client</Label>
                                     </div>
                                 )}
+
+
+                                <div className="grid gap-3">
+                                    <Label htmlFor="allowed-email-domains">Allowed Email Domains</Label>
+                                    <Textarea id="allowed-email-domains" name="allowed-email-domains" placeholder="Comma separated allowed email domains" value={allowedEmailDomains.join(", ")} onChange={(e) => {
+                                        const allowedEmailDomains = e.target.value.split(",").map(domain => domain.trim()).filter(domain => domain.length > 0);
+                                        setAllowedEmailDomains(allowedEmailDomains);
+                                    }} />
+                                </div>
+
 
                                 <div className="grid gap-3">
                                     <Label htmlFor="redirect-urls-1">Redirect URLs</Label>
