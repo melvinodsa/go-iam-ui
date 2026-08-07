@@ -51,6 +51,8 @@ const UpdateClient = (props: UpdateClientProps) => {
     const [defaultAuthProviderId, setDefaultAuthProviderId] = useState(props.data.default_auth_provider_id || "");
     const [allowedEmailDomains, setAllowedEmailDomains] = useState(props.data.allowed_email_domains || []);
     const [goIamClient, setGoIamClient] = useState(props.data.go_iam_client || false);
+    const [hasServiceAccount, setHasServiceAccount] = useState(Boolean(props.data.service_account_email));
+    const [linkedUserEmail, setLinkedUserEmail] = useState(props.data.service_account_email || "");
 
     const client = useMemo<Client>(() => ({
         id: props.data.id,
@@ -61,7 +63,7 @@ const UpdateClient = (props: UpdateClientProps) => {
         redirect_urls: redirectUrls.split(",").map(url => url.trim()), // Split redirect URLs by comma and trim whitespace
         project_id: props.data.project_id || "",
         default_auth_provider_id: defaultAuthProviderId,
-        service_account_email: props.data.service_account_email || "",
+        service_account_email: hasServiceAccount ? linkedUserEmail : "",
         linked_user_id: props.data.linked_user_id || "",
         go_iam_client: goIamClient,
         allowed_email_domains: allowedEmailDomains,
@@ -70,7 +72,7 @@ const UpdateClient = (props: UpdateClientProps) => {
         created_by: "system", // This should be replaced with the actual user ID
         updated_at: new Date().toISOString(),
         updated_by: "system", // This should be replaced with the actual user ID
-    }), [name, description, tags, redirectUrls, defaultAuthProviderId, props.data.project_id, props.data.id, props.data.secret, goIamClient, allowedEmailDomains]);
+    }), [name, description, tags, redirectUrls, defaultAuthProviderId, props.data.project_id, props.data.id, props.data.secret, goIamClient, allowedEmailDomains, hasServiceAccount, linkedUserEmail]);
 
     useEffect(() => {
         if (state.updatedClient) {
@@ -89,7 +91,17 @@ const UpdateClient = (props: UpdateClientProps) => {
         state.updateClient(client)
     }, [state.updateClient, client]);
 
-    const disabled = state.updatingClient || !name || !description || !redirectUrls;
+    const handleServiceAccountChange = useCallback((value: boolean | 'indeterminate') => {
+        const isServiceAccount = value === true || value === 'indeterminate';
+        setHasServiceAccount(isServiceAccount);
+        if (!isServiceAccount) {
+            setLinkedUserEmail("");
+        }
+    }, []);
+
+    const hasAuthProvider = Boolean(defaultAuthProviderId);
+    const disabled = state.updatingClient || !name || !description || (!hasAuthProvider && !hasServiceAccount) ||
+        (hasServiceAccount && !linkedUserEmail) || (hasAuthProvider && !redirectUrls);
     return (
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
@@ -124,64 +136,68 @@ const UpdateClient = (props: UpdateClientProps) => {
                         <Label htmlFor="tags-1">Tags</Label>
                         <Textarea id="tags-1" name="tags" placeholder="Comma separated tags" value={tags} onChange={(e) => setTags(e.target.value)} />
                     </div>
-                    {
-                        defaultAuthProviderId && (
-                            <>
-                                <div className="grid gap-3">
-                                    <Label htmlFor="redirect-urls-1">Redirected Urls</Label>
-                                    <Textarea id="redirect-urls-1" name="redirect-urls" placeholder="Comma separated redirected urls" value={redirectUrls} onChange={(e) => setRedirectUrls(e.target.value)} />
+                    <div className="grid gap-3">
+                        <Label>Auth Provider (optional)</Label>
+                        <Select value={defaultAuthProviderId} onValueChange={(value) => setDefaultAuthProviderId(value)}>
+                            <SelectTrigger className="w-full">
+                                <SelectValue placeholder="Select provider" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectGroup>
+                                    <SelectLabel>Auth Providers</SelectLabel>
+                                    {authProviderState.authproviders.map((provider) => (
+                                        <SelectItem key={provider.id} value={provider.id}>{provider.name}</SelectItem>
+                                    ))}
+                                </SelectGroup>
+                            </SelectContent>
+                        </Select>
+                    </div>
+                    <div className="flex items-center gap-3">
+                        <Checkbox id="service-account" checked={hasServiceAccount} onCheckedChange={handleServiceAccountChange} />
+                        <Label htmlFor="service-account">Enable service account</Label>
+                    </div>
+                    {hasServiceAccount && (
+                        <>
+                            <Alert>
+                                <Info className="h-4 w-4" />
+                                <AlertDescription>
+                                    Service account clients require a linked user. The client will inherit the permissions of this user.
+                                </AlertDescription>
+                            </Alert>
+                            <div className="grid gap-3">
+                                <Label htmlFor="linked-user-email">Linked User Email *</Label>
+                                <Input
+                                    id="linked-user-email"
+                                    name="linked-user-email"
+                                    type="email"
+                                    placeholder="user@example.com"
+                                    value={linkedUserEmail}
+                                    onChange={(e) => setLinkedUserEmail(e.target.value)}
+                                />
+                            </div>
+                        </>
+                    )}
+                    {hasAuthProvider && (
+                        <>
+                            <div className="grid gap-3">
+                                <Label htmlFor="redirect-urls-1">Redirected Urls</Label>
+                                <Textarea id="redirect-urls-1" name="redirect-urls" placeholder="Comma separated redirected urls" value={redirectUrls} onChange={(e) => setRedirectUrls(e.target.value)} />
+                            </div>
+                            {!authState.clientAvailable && (
+                                <div className="flex items-center gap-3">
+                                    <Checkbox id="go-iam-client" checked={goIamClient} disabled={authState.clientAvailable} onCheckedChange={value => setGoIamClient(value === true || value === 'indeterminate')} />
+                                    <Label htmlFor="go-iam-client">Set as Go IAM Client</Label>
                                 </div>
-                                <Select value={defaultAuthProviderId} onValueChange={(value) => setDefaultAuthProviderId(value)}>
-                                    <SelectTrigger className="w-[180px]">
-                                        <SelectValue placeholder="Select provider" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectGroup>
-                                            <SelectLabel>Auth Providers</SelectLabel>
-                                            {authProviderState.authproviders.map((provider) => (
-                                                <SelectItem key={provider.id} value={provider.id}>{provider.name}</SelectItem>
-                                            ))}
-                                        </SelectGroup>
-                                    </SelectContent>
-                                </Select>
-                                {!authState.clientAvailable && (
-                                    <div className="flex items-center gap-3">
-                                        <Checkbox id="terms" checked={goIamClient} disabled={authState.clientAvailable} onCheckedChange={value => setGoIamClient(value === true || value === 'indeterminate')} />
-                                        <Label htmlFor="terms">Set as Go IAM Client</Label>
-                                    </div>
-                                )}
-                                <div className="grid gap-3">
-                                    <Label htmlFor="allowed-email-domains">Allowed Email Domains</Label>
-                                    <Textarea id="allowed-email-domains" name="allowed-email-domains" placeholder="Comma separated allowed email domains" value={allowedEmailDomains.join(", ")} onChange={(e) => {
-                                        const allowedEmailDomains = e.target.value.split(",").map(domain => domain.trim()).filter(domain => domain.length > 0);
-                                        setAllowedEmailDomains(allowedEmailDomains);
-                                    }} />
-                                </div>
-                            </>
-                        )
-                    }
-                    {
-                        props.data.service_account_email && (
-                            <>
-                                <Alert>
-                                    <Info className="h-4 w-4" />
-                                    <AlertDescription>
-                                        Service account clients require a linked user. The client will inherit the permissions of this user.
-                                    </AlertDescription>
-                                </Alert>
-                                <div className="grid gap-3">
-                                    <Label htmlFor="linked-user-email">Linked User Email *</Label>
-                                    <Input
-                                        id="linked-user-email"
-                                        name="linked-user-email"
-                                        type="email"
-                                        value={props.data.service_account_email}
-                                        readOnly
-                                    />
-                                </div>
-                            </>
-                        )
-                    }
+                            )}
+                            <div className="grid gap-3">
+                                <Label htmlFor="allowed-email-domains">Allowed Email Domains</Label>
+                                <Textarea id="allowed-email-domains" name="allowed-email-domains" placeholder="Comma separated allowed email domains" value={allowedEmailDomains.join(", ")} onChange={(e) => {
+                                    const allowedEmailDomains = e.target.value.split(",").map(domain => domain.trim()).filter(domain => domain.length > 0);
+                                    setAllowedEmailDomains(allowedEmailDomains);
+                                }} />
+                            </div>
+                        </>
+                    )}
                     <div>
                         <RegenerateSecret data={props.data} />
                     </div>

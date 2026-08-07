@@ -19,7 +19,6 @@ import { useClientState } from "@/hooks/clients"
 import { useAuthProviderState } from "@/hooks/authproviders"
 import { Button } from "@/components/ui/button"
 import { Check, Copy } from "lucide-react"
-import { AuthProviderTypeGoIAMClient } from "@/hooks/authproviders"
 
 const ClientsListPage = () => {
     const navState = useNavState()
@@ -89,13 +88,18 @@ const ClientsListPage = () => {
                                     </Button>
                                 </TableCell>
                                 <TableCell>
-                                    <Badge>{authProvidersState.authprovidersMap[client.default_auth_provider_id]?.name || "Service Account"}</Badge>
+                                    <div className="flex flex-wrap gap-2">
+                                        {client.default_auth_provider_id ? (
+                                            <Badge>{authProvidersState.authprovidersMap[client.default_auth_provider_id]?.name || "Auth Provider"}</Badge>
+                                        ) : (
+                                            <Badge variant="outline">No auth provider</Badge>
+                                        )}
+                                        {client.service_account_email ? <Badge>Service Account</Badge> : null}
+                                    </div>
                                 </TableCell>
                                 <TableCell>{format(new Date(client.updated_at || client.created_at))}</TableCell>
                                 <TableCell>
-                                    {authProvidersState.authprovidersMap[client.default_auth_provider_id]?.name !== AuthProviderTypeGoIAMClient && (
-                                        <UpdateProject data={JSON.parse(JSON.stringify(client))} />
-                                    )}
+                                    <UpdateProject data={JSON.parse(JSON.stringify(client))} />
                                 </TableCell>
                             </TableRow>
                         ))}

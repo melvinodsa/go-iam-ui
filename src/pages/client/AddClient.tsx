@@ -64,7 +64,7 @@ const AddClient = () => {
             redirect_urls: redirectUrls.split(",").map(url => url.trim()),
             project_id: projectState.project?.id || "",
             default_auth_provider_id: defaultAuthProviderId,
-            service_account_email: linkedUserEmail,
+            service_account_email: hasServiceAccount ? linkedUserEmail : "",
             enabled: true,
             go_iam_client: goIamClient,
             allowed_email_domains: allowedEmailDomains,
@@ -74,13 +74,8 @@ const AddClient = () => {
             updated_by: "system",
         };
 
-        // Add service_account_email for service account clients
-        if (hasServiceAccount && linkedUserEmail) {
-            clientData.service_account_email = linkedUserEmail;
-        }
-
         return clientData;
-    }, [name, description, tags, redirectUrls, defaultAuthProviderId, projectState.project?.id, goIamClient, linkedUserEmail, hasServiceAccount]);
+    }, [name, description, tags, redirectUrls, defaultAuthProviderId, projectState.project?.id, goIamClient, linkedUserEmail, hasServiceAccount, allowedEmailDomains]);
 
 
     useEffect(() => {
@@ -147,8 +142,9 @@ const AddClient = () => {
         }
     }
 
-    const disabled = state.creatingClient || !name || !description || (!hasServiceAccount && (!defaultAuthProviderId || !redirectUrls)) ||
-        (hasServiceAccount && !linkedUserEmail);
+    const hasAuthProvider = Boolean(defaultAuthProviderId);
+    const disabled = state.creatingClient || !name || !description || (!hasAuthProvider && !hasServiceAccount) ||
+        (hasServiceAccount && !linkedUserEmail) || (hasAuthProvider && !redirectUrls);
 
     return (
         <Dialog open={dialogOpen} onOpenChange={handleDialogClose}>
@@ -189,8 +185,8 @@ const AddClient = () => {
                             </div>
                             <Separator />
                             <div className="grid gap-3">
-                                <Label>Auth Provider</Label>
-                                <Select value={defaultAuthProviderId} onValueChange={(value) => setDefaultAuthProviderId(value)} disabled={hasServiceAccount}>
+                                <Label>Auth Provider (optional)</Label>
+                                <Select value={defaultAuthProviderId} onValueChange={(value) => setDefaultAuthProviderId(value)}>
                                     <SelectTrigger>
                                         <SelectValue placeholder="Select provider" />
                                     </SelectTrigger>
@@ -207,9 +203,8 @@ const AddClient = () => {
                                 </Select>
                             </div>
                             <div className="flex items-center gap-3">
-                                <div>Or</div>
-                                <Checkbox id="terms" checked={hasServiceAccount} disabled={defaultAuthProviderId.length !== 0} onCheckedChange={handleServiceAccountChange} />
-                                <Label htmlFor="terms">Set as service account</Label>
+                                <Checkbox id="service-account" checked={hasServiceAccount} onCheckedChange={handleServiceAccountChange} />
+                                <Label htmlFor="service-account">Enable service account</Label>
                             </div>
 
                             {hasServiceAccount && (
@@ -234,14 +229,13 @@ const AddClient = () => {
                                 </>
                             )}
 
-                            {!hasServiceAccount && <>
+                            {hasAuthProvider && <>
                                 {!authState.clientAvailable && (
                                     <div className="flex items-center gap-3">
-                                        <Checkbox id="terms" checked={goIamClient} disabled={authState.clientAvailable} onCheckedChange={handleGoIamClientChange} />
-                                        <Label htmlFor="terms">Set as Go IAM Client</Label>
+                                        <Checkbox id="go-iam-client" checked={goIamClient} disabled={authState.clientAvailable} onCheckedChange={handleGoIamClientChange} />
+                                        <Label htmlFor="go-iam-client">Set as Go IAM Client</Label>
                                     </div>
                                 )}
-
 
                                 <div className="grid gap-3">
                                     <Label htmlFor="allowed-email-domains">Allowed Email Domains</Label>
@@ -250,7 +244,6 @@ const AddClient = () => {
                                         setAllowedEmailDomains(allowedEmailDomains);
                                     }} />
                                 </div>
-
 
                                 <div className="grid gap-3">
                                     <Label htmlFor="redirect-urls-1">Redirect URLs</Label>
